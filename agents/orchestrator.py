@@ -27,14 +27,20 @@ class Orchestrator(BaseAgent):
 
     def classify_query(self, query: str) -> str:
         """
-        Classify the query to select an agent.
-        Simple rule-based for demo; replace with LLM for advanced intent detection.
+        Classify the query using Ollama for intent detection.
         """
-        query_lower = query.lower()
-        if any(word in query_lower for word in ["name", "email", "contact", "apply", "admission"]):
-            return "form_agent"
-        elif any(word in query_lower for word in ["program", "course", "admission", "esilv"]):
+        prompt = (
+            "Classify the following user query into one of these categories: 'retrieval_agent' for questions about programs, courses, admissions, or general ESILV info; 'form_agent' for queries involving names, emails, contacts, applications, or lead collection. "
+            "Respond with only the category name (e.g., 'retrieval_agent' or 'form_agent').\n\n"
+            f"Query: {query}"
+        )
+        response = self.generate_response(prompt=prompt, context="", model="llama2")
+        # Clean and parse the response
+        response_clean = response.strip().lower()
+        if "retrieval_agent" in response_clean:
             return "retrieval_agent"
+        elif "form_agent" in response_clean:
+            return "form_agent"
         else:
             return "retrieval_agent"  # Default fallback
 

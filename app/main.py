@@ -7,6 +7,7 @@ from pathlib import Path
 
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))  # Add project root
 import streamlit as st
 import requests
@@ -18,6 +19,7 @@ from app import config
 from agents.orchestrator import Orchestrator
 from agents.form_agent import FormAgent
 from agents.retrieval_agent import RetrievalAgent  # Stub
+from agents.faq_agent import FAQAgent
 
 
 # Start FastAPI server in background (only once)
@@ -92,15 +94,19 @@ if "api_started" not in st.session_state:
 
             # Instantiate agents (use stubs for Person A)
             vector_store_path = storage_dir.joinpath("vector_db")  # Person A configures this
-            retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None, vector_store_path=str(vector_store_path))
+            # retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None, vector_store_path=str(vector_store_path))
             form_agent = FormAgent(name="form_agent", llm_client=None, leads_path=leads_path)
-            agents = [retrieval_agent, form_agent]
+            faq_agent = FAQAgent(name="faq_agent", llm_client=None)  # Removed leads_path; uses default FAQs
+            # agents = [faq_agent, form_agent]
+            agents = [faq_agent, form_agent]
+
+
 
             # orchestrator: very simple rule-based
             class ChatRequest(BaseModel):
                 message: str
 
-            orchestrator = Orchestrator(name="orchestrator", llm_client=None, agents=[])  # Configure with agents as needed
+            orchestrator = Orchestrator(name="orchestrator", llm_client=None, agents=agents, vector_store_path=str(vector_store_path))  # Added vector_store_path and agents list
 
             @app.post("/api/chat")
             async def chat_endpoint(req: ChatRequest):

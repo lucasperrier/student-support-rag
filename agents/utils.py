@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 import json
 from pathlib import Path
+import ollama
 import requests  
 
 class BaseAgent(ABC):
@@ -82,13 +83,8 @@ class BaseAgent(ABC):
         """Helper: Call local Ollama LLM to generate a response."""
         full_prompt = f"{self.get_system_prompt()}\n\nContext: {context}\n\nQuery: {prompt}"
         try:
-            response = requests.post(
-                "http://localhost:11434/api/generate",
-                json={"model": model, "prompt": full_prompt, "stream": False},
-                timeout=30
-            )
-            response.raise_for_status()
-            return response.json().get("response", "No response from Ollama.")
+            response = ollama.generate(model=model, prompt=full_prompt, options={"timeout": 120})  # Increased timeout to 120 seconds
+            return response.get("response", "No response from Ollama.")
         except Exception as e:
             return f"LLM error: {str(e)}"
         

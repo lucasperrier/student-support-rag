@@ -19,3 +19,13 @@ class RetrievalAgent(BaseAgent):
         :return: Grounded answer string.
         """
         raise NotImplementedError("Person A: Implement RAG answer generation. Call vector_store.search(query, top_k=5), then use LLM to generate answer from results.")
+
+    def process(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Stub process: Call answer if implemented, else return error.
+        """
+        try:
+            answer = self.answer(query)
+            return {"answer": answer, "sources": [], "action": "answer"}
+        except NotImplementedError:
+            return {"answer": "Retrieval agent not implemented yet. (Stub response)", "sources": [], "action": "error"}
