@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 import json
 from pathlib import Path
+import requests  
 
 class BaseAgent(ABC):
     """
@@ -77,12 +78,20 @@ class BaseAgent(ABC):
             return self.memory.get("history", [])
         return self.memory.get("state", {}).get(key)
 
-    def generate_response(self, prompt: str, context: str = "") -> str:
-        """Helper: Call LLM to generate a response."""
+    def generate_response(self, prompt: str, context: str = "", model: str = "llama2") -> str:
+        """Helper: Call local Ollama LLM to generate a response."""
         full_prompt = f"{self.get_system_prompt()}\n\nContext: {context}\n\nQuery: {prompt}"
-        # Stub: Replace with actual LLM call, e.g., self.llm_client.generate(full_prompt)
-        return f"Simulated LLM response to: {full_prompt[:100]}..."  # Placeholder
-
+        try:
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={"model": model, "prompt": full_prompt, "stream": False},
+                timeout=30
+            )
+            response.raise_for_status()
+            return response.json().get("response", "No response from Ollama.")
+        except Exception as e:
+            return f"LLM error: {str(e)}"
+        
     def log_action(self, action: str):
         """Log agent actions for monitoring."""
         print(f"[{self.name}] {action}")  # Replace with proper logging
