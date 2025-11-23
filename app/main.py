@@ -15,6 +15,11 @@ from app import uploader as upload_ui
 from app import admin as admin_ui
 from app import config
 
+from agents.orchestrator import Orchestrator
+from agents.form_agent import FormAgent
+from agents.retrieval_agent import RetrievalAgent  # Stub
+
+
 # Start FastAPI server in background (only once)
 if "api_started" not in st.session_state:
     st.session_state["api_started"] = True
@@ -85,32 +90,37 @@ if "api_started" not in st.session_state:
                     results = [it for s, it in scored][:top_k]
                 return results
 
+            # Instantiate agents (use stubs for Person A)
+            vector_store_path = storage_dir.joinpath("vector_db")  # Person A configures this
+            retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None, vector_store_path=str(vector_store_path))
+            form_agent = FormAgent(name="form_agent", llm_client=None, leads_path=leads_path)
+            agents = [retrieval_agent, form_agent]
+
             # orchestrator: very simple rule-based
-
-            # orchestrator = Orchestrator(name="orchestrator", llm_client=None, agents=[])  # Configure with agents as needed
-
-            # @app.post("/api/chat")
-            # async def chat_endpoint(req: ChatRequest):
-            # user_msg = req.message.strip()
-            # # Use orchestrator instead of stubbed logic
-            # response = orchestrator.process(user_msg)
-            #     return response 
             class ChatRequest(BaseModel):
                 message: str
+
+            orchestrator = Orchestrator(name="orchestrator", llm_client=None, agents=[])  # Configure with agents as needed
 
             @app.post("/api/chat")
             async def chat_endpoint(req: ChatRequest):
                 user_msg = req.message.strip()
-                # form agent trigger: look for intent words
-                form_triggers = ["name", "email", "contact", "apply", "admission"]
-                if any(t in user_msg.lower() for t in form_triggers):
-                    # ask for structured info (form agent)
-                    resp = {
-                        "answer": "I can help with admissions and collect contact details. Please provide your full name and email.",
-                        "sources": [],
-                        "action": "collect_lead",
-                    }
-                    return resp
+                response = orchestrator.process(user_msg)
+                return response
+
+            # @app.post("/api/chat")
+            # async def chat_endpoint(req: ChatRequest):
+            #     user_msg = req.message.strip()
+            #     # form agent trigger: look for intent words
+            #     form_triggers = ["name", "email", "contact", "apply", "admission"]
+            #     if any(t in user_msg.lower() for t in form_triggers):
+            #         # ask for structured info (form agent)
+            #         resp = {
+            #             "answer": "I can help with admissions and collect contact details. Please provide your full name and email.",
+            #             "sources": [],
+            #             "action": "collect_lead",
+            #         }
+            #         return resp
 
                 # else use retrieval agent (RAG)
                 retrieved = simple_search(user_msg, top_k=3)

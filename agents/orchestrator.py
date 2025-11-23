@@ -8,7 +8,7 @@ class Orchestrator(BaseAgent):
     Inherits from BaseAgent for consistency, but acts as the central dispatcher.
     """
 
-    def __init__(self, name: str, llm_client: Any, agents: List[BaseAgent]):
+    def __init__(self, name: str, llm_client: Any, agents: List[BaseAgent], vector_store_path: str):
         """
         Initialize the orchestrator.
         :param name: 'orchestrator'
@@ -17,6 +17,9 @@ class Orchestrator(BaseAgent):
         """
         super().__init__(name, llm_client, tools=[], memory_path=None)  # No tools or memory for orchestrator
         self.agents = {agent.name: agent for agent in agents}
+        if "retrieval_agent" not in self.agents:
+            from .retrieval_agent import RetrievalAgent
+            self.agents["retrieval_agent"] = RetrievalAgent("retrieval_agent", llm_client, vector_store_path)
 
     def get_system_prompt(self) -> str:
         """System prompt for orchestrator (minimal, as it's a dispatcher)."""
