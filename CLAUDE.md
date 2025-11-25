@@ -2,6 +2,30 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚀 Quick Status Overview
+
+**Last Updated**: November 25, 2025 (based on commit `aeea693 - loader added`)
+
+**Project Status**:
+- 🟢 **UI & Orchestration**: Complete (Person B)
+- 🟡 **Document Loading**: Complete (Person A)
+- 🔴 **RAG Pipeline**: Not yet implemented (Person A's focus)
+
+**What Works**:
+- Streamlit UI with chat interface ✅
+- Multi-agent orchestrator with intelligent routing ✅
+- Form agent (lead collection) ✅
+- FAQ agent ✅
+- Document loader (PDF/HTML/TXT) ✅
+
+**What Needs Implementation** (Person A):
+- Text cleaning, chunking, embedding ⚠️
+- Vector store (FAISS/Chroma) ⚠️
+- RAG answer generation ⚠️
+- Full ingestion pipeline ⚠️
+
+---
+
 ## Project Overview
 
 ESILV Smart Assistant is an AI-powered chatbot for answering questions about ESILV programs, admissions, and academic information. It uses Retrieval-Augmented Generation (RAG) with multi-agent orchestration. The system combines a Streamlit frontend with a FastAPI backend embedded in the same process.
@@ -69,20 +93,26 @@ ESILV Smart Assistant is an AI-powered chatbot for answering questions about ESI
 ### Person A's Responsibilities & Files:
 
 **Ingestion Pipeline** (`ingestion/` directory):
-- `loader.py` - Load PDFs, HTML, text files
-- `text_cleaning.py` - Preprocess and clean extracted text
-- `chunker.py` - Split documents into retrieval chunks
-- `embedder.py` - Generate embeddings (Ollama/sentence-transformers)
-- `vector_store.py` - FAISS/Chroma wrapper with `search()` function
-- `pipeline.py` - Orchestrate full ingestion flow
+- `loader.py` - ✅ **IMPLEMENTED** - Load PDFs, HTML, text files with comprehensive documentation
+- `text_cleaning.py` - ⚠️ **STUB** - Preprocess and clean extracted text
+- `chunker.py` - ⚠️ **STUB** - Split documents into retrieval chunks
+- `embedder.py` - ⚠️ **STUB** - Generate embeddings (Ollama/sentence-transformers)
+- `vector_store.py` - ⚠️ **STUB** - FAISS/Chroma wrapper with `search()` function
+- `pipeline.py` - ⚠️ **STUB** - Orchestrate full ingestion flow
 
 **Retrieval Agent**:
-- `agents/retrieval_agent.py` - Implement RAG answer generation
+- `agents/retrieval_agent.py` - ⚠️ **STUB** - Implement RAG answer generation
 
 **Evaluation**:
 - `notebooks/evaluation.ipynb` - RAG quality testing
 - `notebooks/retrieval_tests.ipynb` - Vector search debugging
 - `notebooks/ingestion_tests.ipynb` - PDF/text extraction testing
+
+**Current Implementation Status**:
+- ✅ Document loading (PDF, HTML, TXT) is fully functional
+- ✅ Comprehensive file header documentation added to loader.py
+- ⚠️ Remaining ingestion components need implementation
+- ⚠️ Retrieval agent needs RAG logic implementation
 
 **Critical API Contracts** (must be stable for Person B):
 ```python
@@ -140,24 +170,30 @@ python -m ingestion.pipeline --data-dir data/raw --out data/vector_db
 The application uses an **orchestrator pattern** for routing queries to specialized agents:
 
 1. **Orchestrator** (`agents/orchestrator.py`):
+   - ✅ **IMPLEMENTED** by Person B
    - Entry point for all queries
-   - Uses Ollama LLM for intent classification
+   - Uses Ollama LLM for intelligent intent classification
    - Routes to appropriate agent based on query type
-   - Maintains registry of available agents
+   - Maintains registry of available agents (retrieval, form, FAQ)
+   - Gracefully handles stub agents (returns error message when not implemented)
 
 2. **Retrieval Agent** (`agents/retrieval_agent.py`):
    - Handles information queries about ESILV
    - Uses RAG pattern: retrieves relevant chunks from vector DB, generates grounded answers
-   - **Currently a stub** - Person A responsible for implementation
+   - ⚠️ **STILL A STUB** - Person A responsible for implementation
    - Must implement `answer(query: str) -> str` method
+   - Needs to call `vector_store.search()` and generate answer from retrieved chunks
+   - Currently returns stub error message when called
 
 3. **Form Agent** (`agents/form_agent.py`):
+   - ✅ **IMPLEMENTED** by Person B
    - Collects lead information (name, email, interest)
    - Extracts structured data from user messages
    - Persists leads to `data/leads.json`
    - Prompts for missing required fields
 
 4. **FAQ Agent** (`agents/faq_agent.py`):
+   - ✅ **IMPLEMENTED** by Person B
    - Handles static frequently asked questions
    - Quick responses without vector DB lookup
 
@@ -198,25 +234,51 @@ Response returned to UI
 
 ### Ingestion Pipeline (Person A's Responsibility)
 
-The ingestion pipeline is **not yet fully implemented**. Expected architecture:
+The ingestion pipeline is **partially implemented**. Current status:
 
-1. **Loader** (`ingestion/loader.py`): Load PDFs, HTML, text files
-2. **Text Cleaning** (`ingestion/text_cleaning.py`): Preprocess and clean extracted text
-3. **Chunker** (`ingestion/chunker.py`): Split documents into retrieval chunks
-4. **Embedder** (`ingestion/embedder.py`): Generate embeddings (Ollama or sentence-transformers)
-5. **Vector Store** (`ingestion/vector_store.py`): FAISS/ChromaDB wrapper with `search(query, top_k)` function
-6. **Pipeline** (`ingestion/pipeline.py`): Orchestrates the full ingestion flow
+1. **Loader** (`ingestion/loader.py`): ✅ **FULLY IMPLEMENTED**
+   - Loads PDFs (with pypdf/PyPDF2), HTML (with BeautifulSoup), and text files
+   - Returns Document objects with text, metadata, and source
+   - Includes `load_document()` and `load_documents_from_directory()` functions
+   - Comprehensive documentation with file headers explaining API contracts
+
+2. **Text Cleaning** (`ingestion/text_cleaning.py`): ⚠️ **STUB** - Preprocess and clean extracted text
+
+3. **Chunker** (`ingestion/chunker.py`): ⚠️ **STUB** - Split documents into retrieval chunks
+
+4. **Embedder** (`ingestion/embedder.py`): ⚠️ **STUB** - Generate embeddings (Ollama or sentence-transformers)
+
+5. **Vector Store** (`ingestion/vector_store.py`): ⚠️ **STUB** - FAISS/ChromaDB wrapper with `search(query, top_k)` function
+
+6. **Pipeline** (`ingestion/pipeline.py`): ⚠️ **STUB** - Orchestrates the full ingestion flow
 
 ### Critical API Contracts
 
 These interfaces must remain stable for Person A/Person B integration:
 
 ```python
-# ingestion/vector_store.py
+# ingestion/loader.py (IMPLEMENTED)
+from dataclasses import dataclass
+from typing import Dict, Any
+
+@dataclass
+class Document:
+    """Standard document format used throughout ingestion pipeline"""
+    text: str                      # Extracted text content
+    metadata: Dict[str, Any]       # filename, file_type, page_count, etc.
+    source: str                    # Original file path
+
+def load_document(file_path: str) -> Optional[Document]:
+    """Load a document from PDF, HTML, or TXT format"""
+
+def load_documents_from_directory(directory_path: str, recursive: bool = False) -> List[Document]:
+    """Load all supported documents from a directory"""
+
+# ingestion/vector_store.py (STUB - NEEDS IMPLEMENTATION)
 def search(query: str, top_k: int = 5) -> List[Tuple[str, Dict]]:
     """Returns list of (chunk_text, metadata_dict)"""
 
-# agents/retrieval_agent.py
+# agents/retrieval_agent.py (STUB - NEEDS IMPLEMENTATION)
 def answer(query: str) -> str:
     """Returns grounded RAG answer"""
 ```
@@ -240,22 +302,34 @@ For LLM configuration, agents use Ollama directly via the `ollama` Python packag
 
 ## Development Workflow
 
-### Person A (Ingestion & Retrieval)
-- Implement ingestion pipeline modules
-- Implement vector store search
-- Implement retrieval agent's `answer()` method
-- Evaluation notebooks in `notebooks/`
+### Person A (Ingestion & Retrieval) - CURRENT FOCUS
+**Completed:**
+- ✅ Document loader (PDF, HTML, TXT) with comprehensive documentation
+- ✅ Document dataclass and API contracts defined
 
-### Person B (Agents, UI, Orchestration)
-- Implement orchestrator routing logic
-- Implement form agent
-- Build Streamlit UI components
-- Connect UI to ingestion pipeline
+**In Progress / Next:**
+- ⚠️ Text cleaning module
+- ⚠️ Chunking logic
+- ⚠️ Embedding generation
+- ⚠️ Vector store implementation
+- ⚠️ Pipeline orchestration
+- ⚠️ Retrieval agent RAG logic
+- ⚠️ Evaluation notebooks
 
-### Parallel Development
-- Person B can develop using stub implementations
-- The orchestrator already instantiates `RetrievalAgent` even when stub
-- Integration point: When Person A implements `vector_store.search()` and `retrieval_agent.answer()`, they will be automatically called
+### Person B (Agents, UI, Orchestration) - LARGELY COMPLETE
+**Completed:**
+- ✅ Orchestrator with intelligent routing
+- ✅ Form agent for lead collection
+- ✅ FAQ agent for static responses
+- ✅ Streamlit UI with Chat/Upload/Admin tabs
+- ✅ FastAPI backend with REST endpoints
+- ✅ BaseAgent framework
+
+### Integration Status
+- ✅ Person B's infrastructure is ready and waiting for Person A's RAG implementation
+- ✅ The orchestrator already instantiates `RetrievalAgent` and routes queries to it
+- ⚠️ Retrieval agent returns stub error until Person A implements it
+- 🎯 **Key Integration Point**: When Person A implements `vector_store.search()` and `retrieval_agent.answer()`, the system will be fully functional end-to-end
 
 ## LLM Usage
 
@@ -278,3 +352,63 @@ Streamlit UI has three tabs:
 - Agents log actions to stdout with `[agent_name] action` format
 - The current vector search in FastAPI endpoints is a simple keyword-matching stub; proper RAG requires Person A's implementation
 - Memory is persisted per-agent to `data/{agent_name}_memory.json`
+
+## Next Steps for Person A
+
+### Immediate Priority (Required for RAG to Work)
+
+1. **Text Cleaning** (`ingestion/text_cleaning.py`):
+   - Implement text normalization (remove extra whitespace, special characters)
+   - Handle encoding issues
+   - Input: Document.text from loader
+   - Output: cleaned string
+
+2. **Chunker** (`ingestion/chunker.py`):
+   - Implement semantic chunking (500-1000 tokens per chunk)
+   - Consider: RecursiveCharacterTextSplitter or sentence-based chunking
+   - Preserve metadata (source file, page number) for each chunk
+   - Input: cleaned text
+   - Output: List of text chunks with metadata
+
+3. **Embedder** (`ingestion/embedder.py`):
+   - Generate embeddings using Ollama (nomic-embed-text) or sentence-transformers
+   - Batch processing for efficiency
+   - Input: text chunks
+   - Output: numpy arrays of embeddings
+
+4. **Vector Store** (`ingestion/vector_store.py`):
+   - Implement FAISS or ChromaDB wrapper
+   - Store chunks + embeddings + metadata
+   - Implement `search(query, top_k)` → returns relevant chunks
+   - Persist to `data/vector_db/`
+
+5. **Pipeline** (`ingestion/pipeline.py`):
+   - Orchestrate: load → clean → chunk → embed → store
+   - CLI interface: `python -m ingestion.pipeline --data-dir data/raw`
+   - Log progress and errors
+
+6. **Retrieval Agent** (`agents/retrieval_agent.py`):
+   - Call `vector_store.search(query, top_k=5)`
+   - Build context from retrieved chunks
+   - Use Ollama to generate grounded answer
+   - Cite sources in response
+
+### Testing & Validation
+
+After implementation:
+- Test with sample PDFs in `data/raw/`
+- Verify retrieval quality in notebooks
+- Ensure orchestrator routes queries correctly to retrieval agent
+- Check that answers are grounded in retrieved content
+
+### Integration Checklist
+
+Before declaring RAG complete:
+- [ ] Can load documents from `data/raw/`
+- [ ] Can chunk and embed documents
+- [ ] Vector store persists to disk
+- [ ] `search()` returns relevant chunks
+- [ ] Retrieval agent generates grounded answers
+- [ ] Orchestrator routes info queries to retrieval agent
+- [ ] Answers cite source documents
+- [ ] UI displays RAG responses correctly
