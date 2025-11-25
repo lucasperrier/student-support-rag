@@ -8,5 +8,7 @@ def search(query: str, top_k: int = 5) -> List[Tuple[str, Dict]]:
     :param query: User query string.
     :param top_k: Number of top results.
     :return: List of (chunk_text, metadata_dict) tuples.
+    
+    This function will be called by retrieval_agent.py.
     """
     raise NotImplementedError("Person A: Implement vector DB search (e.g., using FAISS/Chroma). Return list of (chunk_text, metadata).")

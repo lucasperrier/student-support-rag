@@ -1,1 +1,1 @@
-# Embeddings via Ollama/other
+# Embeddings via Ollama
