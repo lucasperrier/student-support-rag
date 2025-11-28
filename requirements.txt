@@ -4,11 +4,17 @@ langchain>=0.0.240
 openai>=0.28.0
 requests>=2.31.0
 python-dotenv>=1.0.0
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# LLM Integration
+ollama>=0.6.0
 
 # Embeddings & models
 sentence-transformers>=2.2.2
 transformers>=4.34.0
 torch>=2.0.0
+numpy>=1.24.0
 
 # Vector DBs (choose one or keep both)
 chromadb>=0.3.27
@@ -23,3 +29,4 @@ lxml>=4.9.3
 tiktoken>=0.4.0
 pandas>=2.0.0
 pytest>=7.0.0
+pytest-asyncio>=0.21.0
