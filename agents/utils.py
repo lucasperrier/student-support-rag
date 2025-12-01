@@ -83,7 +83,7 @@ class BaseAgent(ABC):
         """Helper: Call local Ollama LLM to generate a response."""
         full_prompt = f"{self.get_system_prompt()}\n\nContext: {context}\n\nQuery: {prompt}"
         try:
-            response = ollama.generate(model=model, prompt=full_prompt, options={"timeout": 120})  # Increased timeout to 120 seconds
+            response = ollama.generate(model=model, prompt=full_prompt, options={"timeout": 300})  # Increased timeout to 300 seconds
             return response.get("response", "No response from Ollama.")
         except Exception as e:
             return f"LLM error: {str(e)}"

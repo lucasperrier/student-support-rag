@@ -17,9 +17,6 @@ class Orchestrator(BaseAgent):
         """
         super().__init__(name, llm_client, tools=[], memory_path=None)  # No tools or memory for orchestrator
         self.agents = {agent.name: agent for agent in agents}
-        if "retrieval_agent" not in self.agents:
-            from .retrieval_agent import RetrievalAgent
-            self.agents["retrieval_agent"] = RetrievalAgent("retrieval_agent", llm_client, vector_store_path)
 
     def get_system_prompt(self) -> str:
         """System prompt for orchestrator (minimal, as it's a dispatcher)."""
@@ -30,11 +27,13 @@ class Orchestrator(BaseAgent):
         Classify the query using Ollama for intent detection.
         """
         prompt = (
-            "Classify the following user query into one of these categories: 'retrieval_agent' for questions about programs, courses, admissions, or general ESILV info; 'form_agent' for queries involving names, emails, contacts, applications, or lead collection. "
-            "Respond with only the category name (e.g., 'retrieval_agent' or 'form_agent').\n\n"
-            f"Query: {query}"
+            "Classify the following user query into EXACTLY one of these categories. Respond with ONLY the category name.\n\n"
+            "- 'retrieval_agent': For questions about ESILV programs, courses, admissions, history, or general information (e.g., 'What is ESILV?', 'Tell me about programs').\n"
+            "- 'form_agent': ONLY for queries explicitly involving providing or collecting personal info like names, emails, contacts, or applications (e.g., 'My name is John', 'I want to apply').\n\n"
+            f"Query: {query}\n\nCategory:"
         )
         response = self.generate_response(prompt=prompt, context="", model="llama2")
+        print(f"DEBUG: Ollama classification response: '{response}'")  # Add this line
         # Clean and parse the response
         response_clean = response.strip().lower()
         if "retrieval_agent" in response_clean:

@@ -11,10 +11,10 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))  # Add project root
 import streamlit as st
 import requests
-from app import chat as chat_ui  # Now absolute
-from app import uploader as upload_ui
-from app import admin as admin_ui
-from app import config
+import chat as chat_ui  # Now absolute
+import uploader as upload_ui
+import admin as admin_ui
+import config
 
 from agents.orchestrator import Orchestrator
 from agents.form_agent import FormAgent
@@ -97,8 +97,9 @@ if "api_started" not in st.session_state:
             # retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None, vector_store_path=str(vector_store_path))
             form_agent = FormAgent(name="form_agent", llm_client=None, leads_path=leads_path)
             faq_agent = FAQAgent(name="faq_agent", llm_client=None)  # Removed leads_path; uses default FAQs
+            retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None)
             # agents = [faq_agent, form_agent]
-            agents = [faq_agent, form_agent]
+            agents = [faq_agent, form_agent, retrieval_agent]
 
 
 
@@ -184,7 +185,7 @@ if "api_started" not in st.session_state:
                 return {"status": "ok", "lead": lead}
 
             # Run uvicorn
-            uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
+            uvicorn.run(app, host="127.0.0.1", port=8001, log_level="warning")
 
         except Exception as e:
             print(f"Error starting FastAPI server: {e}")

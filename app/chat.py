@@ -29,7 +29,7 @@ def render_chat(api_url: str, create_lead_url: str):
             _append_message("user", user_input)
             # call API
             try:
-                r = requests.post(api_url, json={"message": user_input}, timeout=15)
+                r = requests.post(api_url, json={"message": user_input}, timeout=300)
                 r.raise_for_status()
                 payload = r.json()
                 answer = payload.get("answer", "No answer returned.")
