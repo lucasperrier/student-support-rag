@@ -1,11 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createLead, sendChat } from "../api";
 
 type Message = { role: "user" | "assistant"; text: string };
 
 export function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", text: "Hello — ask me about ESILV programs, admissions, courses or upload documents for context." },
+    {
+      role: "assistant",
+      text:
+        "Ask me anything about ESILV.\n\nTip: If I don’t have enough information, upload the relevant PDF in the Upload tab.",
+    },
   ]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -14,9 +18,15 @@ export function ChatPage() {
   const [leadName, setLeadName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadInterest, setLeadInterest] = useState("");
-  const [leadStatus, setLeadStatus] = useState("");
+  const [leadStatus, setLeadStatus] = useState<string>("");
+
+  const endRef = useRef<HTMLDivElement | null>(null);
 
   const canSend = useMemo(() => input.trim().length > 0 && !isSending, [input, isSending]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length, isSending]);
 
   async function onSend() {
     const text = input.trim();
@@ -34,16 +44,23 @@ export function ChatPage() {
       setMessages((prev) => [...prev, { role: "assistant", text: resp.answer ?? "No answer returned." }]);
       setAction(resp.action ?? null);
     } catch (e) {
-      setMessages((prev) => [...prev, { role: "assistant", text: `Service error: ${String(e)}` }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: `Service error: ${String(e)}\n\nCheck the backend is running on 127.0.0.1:8001.` },
+      ]);
     } finally {
       setIsSending(false);
     }
   }
 
   async function onSubmitLead() {
+    const name = leadName.trim();
+    const email = leadEmail.trim();
+    if (!name || !email) return;
+
     setLeadStatus("");
     try {
-      await createLead({ name: leadName.trim(), email: leadEmail.trim(), interest: leadInterest.trim() });
+      await createLead({ name, email, interest: leadInterest.trim() });
       setLeadStatus("Thanks — contact saved.");
     } catch (e) {
       setLeadStatus(`Failed to save contact: ${String(e)}`);
@@ -51,44 +68,66 @@ export function ChatPage() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 16 }}>
-      <h2>Chat</h2>
-
-      <div style={{ border: "1px solid #ddd", borderRadius: 10, padding: 12, minHeight: 360 }}>
+    <div className="card chat-wrap">
+      <div className="messages">
         {messages.map((m, i) => (
-          <div key={i} style={{ margin: "10px 0" }}>
-            <strong>{m.role === "user" ? "You" : "Assistant"}:</strong> {m.text}
+          <div key={i} className={`msg-row ${m.role}`}>
+            <div className="bubble">
+              <div className="bubble-meta">{m.role === "user" ? "You" : "Assistant"}</div>
+              {m.text}
+            </div>
           </div>
         ))}
-        {isSending ? <div style={{ opacity: 0.7 }}>Assistant is thinking…</div> : null}
+
+        {isSending ? (
+          <div className="msg-row assistant">
+            <div className="bubble">
+              <div className="bubble-meta">Assistant</div>
+              Thinking…
+            </div>
+          </div>
+        ) : null}
+
+        <div ref={endRef} />
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+      <div className="composer">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Your question…"
-          style={{ flex: 1, padding: 10 }}
+          placeholder="Type your question…"
           onKeyDown={(e) => {
             if (e.key === "Enter") onSend();
           }}
         />
-        <button onClick={onSend} disabled={!canSend} style={{ padding: "10px 14px" }}>
+        <button className="btn" onClick={onSend} disabled={!canSend}>
           Send
         </button>
       </div>
 
       {action === "collect_lead" ? (
-        <div style={{ marginTop: 16, border: "1px solid #eee", borderRadius: 10, padding: 12 }}>
-          <h3>Contact details</h3>
+        <div className="notice" style={{ margin: 12 }}>
+          <div style={{ fontWeight: 650, marginBottom: 8, color: "var(--text)" }}>Contact details</div>
+
           <div style={{ display: "grid", gap: 8, maxWidth: 520 }}>
             <input placeholder="Full name" value={leadName} onChange={(e) => setLeadName(e.target.value)} />
             <input placeholder="Email" value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} />
-            <input placeholder="Interest (optional)" value={leadInterest} onChange={(e) => setLeadInterest(e.target.value)} />
-            <button onClick={onSubmitLead} disabled={!leadName.trim() || !leadEmail.trim()}>
-              Submit
-            </button>
-            {leadStatus ? <div>{leadStatus}</div> : null}
+            <input
+              placeholder="Interest (optional)"
+              value={leadInterest}
+              onChange={(e) => setLeadInterest(e.target.value)}
+            />
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="btn" onClick={onSubmitLead} disabled={!leadName.trim() || !leadEmail.trim()}>
+                Submit
+              </button>
+              <button className="btn secondary" onClick={() => setAction(null)}>
+                Not now
+              </button>
+            </div>
+
+            {leadStatus ? <div className={leadStatus.startsWith("Failed") ? "error" : ""}>{leadStatus}</div> : null}
           </div>
         </div>
       ) : null}
