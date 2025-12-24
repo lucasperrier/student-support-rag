@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+from sqlmodel import Session, select
+
+from backend.db import Student, get_engine, init_db
+from backend.web_ingest import fetch_website_to_raw
 
 from agents.orchestrator import Orchestrator
 from agents.form_agent import FormAgent
@@ -18,6 +25,16 @@ from agents.retrieval_agent import RetrievalAgent
 class ChatRequest(BaseModel):
     message: str
 
+class StudentCreate(BaseModel):
+    student_id: str
+    first_name: str
+    last_name: str
+    email: str
+    program: str = ""
+    year: int = 0
+
+class WebIngestRequest(BaseModel):
+    url: str
 
 def create_app() -> FastAPI:
     app = FastAPI(title="ESILV Smart Assistant API")
@@ -113,6 +130,65 @@ def create_app() -> FastAPI:
         leads.append(lead)
         leads_path.write_text(json.dumps(leads, ensure_ascii=False, indent=2))
         return {"status": "ok", "lead": lead}
+
+    # --- Student DB (SQLite file under data/) ---
+    db_path = storage_dir.joinpath("students.db")
+    engine = get_engine(str(db_path))
+    init_db(engine)
+
+    @app.get("/api/admin/students")
+    async def list_students() -> List[Student]:
+        with Session(engine) as session:
+            rows = session.exec(select(Student).order_by(Student.created_at.desc())).all()
+            return rows
+
+    @app.post("/api/admin/students")
+    async def create_student(payload: StudentCreate) -> Dict[str, Any]:
+        student = Student(
+            student_id=payload.student_id.strip(),
+            first_name=payload.first_name.strip(),
+            last_name=payload.last_name.strip(),
+            email=payload.email.strip(),
+            program=payload.program.strip(),
+            year=int(payload.year),
+        )
+        with Session(engine) as session:
+            session.add(student)
+            session.commit()
+            session.refresh(student)
+        return {"status": "ok", "student": student}
+
+    @app.post("/api/admin/ingest_url")
+    async def ingest_url(req: WebIngestRequest):
+        url = req.url.strip()
+        saved_path = fetch_website_to_raw(url, raw_dir)
+        return {"status": "ok", "saved_as": saved_path.name}
+    
+    @app.post("/api/admin/reindex")
+    async def reindex():
+        """
+        Rebuild vector DB from files in data/raw using existing ingestion pipeline.
+        Keeps behavior consistent with the CLI: `python -m ingestion.pipeline --data-dir data/raw --out data/vector_db`.
+        """
+        project_root = Path(__file__).parent.parent
+        data_dir = project_root.joinpath("data", "raw")
+        out_dir = project_root.joinpath("data", "vector_db")
+
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        cmd = [
+            sys.executable,
+            "-m",
+            "ingestion.pipeline",
+            "--data-dir",
+            str(data_dir),
+            "--out",
+            str(out_dir),
+        ]
+        subprocess.run(cmd, cwd=str(project_root), check=True)
+
+        indexed_files = len([p for p in data_dir.iterdir() if p.is_file()])
+        return {"status": "ok", "indexed_files": indexed_files}
 
     return app
 

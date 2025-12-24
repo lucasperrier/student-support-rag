@@ -54,3 +54,39 @@ export async function createLead(payload: { name: string; email: string; interes
   await assertOk(res);
   return res.json();
 }
+
+export type Student = {
+  id: number;
+  student_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  program: string;
+  year: number;
+  created_at: string;
+};
+
+export async function fetchStudents(): Promise<Student[]> {
+  const res = await fetch(`${API_URL}/api/admin/students`);
+  await assertOk(res);
+  return res.json();
+}
+
+export async function ingestUrl(url: string): Promise<{ status: string; saved_as: string }> {
+  const res = await fetch(`${API_URL}/api/admin/ingest_url`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  await assertOk(res);
+  return res.json();
+}
+
+/**
+ * Triggers a backend re-index operation (you will add this endpoint in the backend).
+ */
+export async function reindexNow(): Promise<{ status: string; indexed_files: number }> {
+  const res = await fetch(`${API_URL}/api/admin/reindex`, { method: "POST" });
+  await assertOk(res);
+  return res.json();
+}
