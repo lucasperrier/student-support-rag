@@ -1,5 +1,27 @@
-.esilv_smart_assistant
+# --- Python ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+*.log
 
-data
+# --- OS ---
+.DS_Store
 
-app/config.py
+# --- Node/Vite ---
+node_modules/
+dist/
+frontend/.env
+frontend/.env.*
+
+# --- Project data artifacts (do not commit) ---
+data/vector_db/
+data/processed/
+data/raw/
+data/*.db
+data/*.sqlite*
+data/leads.json
+data/vector_index.json

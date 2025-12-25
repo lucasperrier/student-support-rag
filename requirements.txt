@@ -1,32 +1,20 @@
-# Core
-streamlit>=1.20
-langchain>=0.0.240
-openai>=0.28.0
-requests>=2.31.0
-python-dotenv>=1.0.0
-fastapi>=0.104.0
-uvicorn>=0.24.0
+fastapi>=0.110
+uvicorn[standard]>=0.23
+python-multipart>=0.0.9
+pydantic>=2.0
+sqlmodel>=0.0.20
 
-# LLM Integration
-ollama>=0.6.0
-
-# Embeddings & models
+# Retrieval / embeddings (keep what you actually use)
+faiss-cpu>=1.7.4
 sentence-transformers>=2.2.2
-transformers>=4.34.0
-torch>=2.0.0
-numpy>=1.24.0
 
-# Vector DBs (choose one or keep both)
-chromadb>=0.3.27
-faiss-cpu>=1.7.4  # optional, may require conda on some systems
+# LangChain (for web ingestion / optional chains)
+langchain>=0.2
+langchain-community>=0.2
+beautifulsoup4>=4.12
 
-# Ingestion / parsing
-pypdf>=3.10.0
-beautifulsoup4>=4.12.2
-lxml>=4.9.3
+# Tests
+pytest>=8.0
+pytest-asyncio>=0.23
 
-# Utilities & testing
-tiktoken>=0.4.0
-pandas>=2.0.0
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
+ollama>=0.1

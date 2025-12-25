@@ -1,13 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchAdmin, fetchStudents, ingestUrl, reindexNow } from "../api";
+import { createStudent, fetchAdmin, fetchStudents, ingestUrl, reindexNow } from "../api";
 import type { Student } from "../api";
 
 type AdminData = { leads: unknown[]; uploads: unknown[] };
-
-function tryString(v: unknown): string {
-  if (typeof v === "string") return v;
-  return JSON.stringify(v);
-}
 
 export function AdminPage() {
   const [admin, setAdmin] = useState<AdminData | null>(null);
@@ -18,6 +13,25 @@ export function AdminPage() {
   const [ingestStatus, setIngestStatus] = useState<string>("");
   const [reindexStatus, setReindexStatus] = useState<string>("");
   const [busy, setBusy] = useState(false);
+
+  // --- Student creation form state ---
+  const [studentId, setStudentId] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [studentEmail, setStudentEmail] = useState("");
+  const [program, setProgram] = useState("");
+  const [year, setYear] = useState<string>("0");
+  const [studentCreateStatus, setStudentCreateStatus] = useState<string>("");
+
+  const canCreateStudent = useMemo(() => {
+    return (
+      studentId.trim().length > 0 &&
+      firstName.trim().length > 0 &&
+      lastName.trim().length > 0 &&
+      studentEmail.trim().length > 0 &&
+      !busy
+    );
+  }, [studentId, firstName, lastName, studentEmail, busy]);
 
   async function refreshAll() {
     setErr("");
@@ -68,9 +82,49 @@ export function AdminPage() {
     }
   }
 
+  async function onCreateStudent() {
+    if (!canCreateStudent) return;
+
+    setBusy(true);
+    setStudentCreateStatus("");
+
+    try {
+      const payload = {
+        student_id: studentId.trim(),
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: studentEmail.trim(),
+        program: program.trim(),
+        year: Number.isFinite(Number(year)) ? Number(year) : 0,
+      };
+
+      await createStudent(payload);
+
+      setStudentCreateStatus("Student created.");
+      setStudentId("");
+      setFirstName("");
+      setLastName("");
+      setStudentEmail("");
+      setProgram("");
+      setYear("0");
+
+      // Refresh students list
+      const s = await fetchStudents();
+      setStudents(s);
+    } catch (e) {
+      setStudentCreateStatus(`Error: ${String(e)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="card" style={{ padding: 14 }}>
-      {err ? <div className="error" style={{ marginBottom: 10 }}>{err}</div> : null}
+      {err ? (
+        <div className="error" style={{ marginBottom: 10 }}>
+          {err}
+        </div>
+      ) : null}
 
       <div style={{ display: "grid", gap: 14 }}>
         {/* Actions */}
@@ -108,7 +162,6 @@ export function AdminPage() {
             {reindexStatus ? <div style={{ marginTop: 8 }}>{reindexStatus}</div> : null}
           </div>
         </div>
-
         {/* Students */}
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -118,10 +171,48 @@ export function AdminPage() {
             </div>
           </div>
 
+          {/* Student creation form */}
+          <div className="notice" style={{ marginTop: 10 }}>
+            <div style={{ fontWeight: 650, marginBottom: 8, color: "var(--text)" }}>Create a student</div>
+
+            <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr" }}>
+              <input
+                placeholder="Student ID (e.g. ESILV2025-001)"
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+              />
+              <input placeholder="Email" value={studentEmail} onChange={(e) => setStudentEmail(e.target.value)} />
+
+              <input placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <input placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+
+              <input placeholder="Program (optional)" value={program} onChange={(e) => setProgram(e.target.value)} />
+              <input
+                placeholder="Year (number)"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 10, alignItems: "center" }}>
+              <button className="btn" onClick={onCreateStudent} disabled={!canCreateStudent}>
+                Create student
+              </button>
+              {studentCreateStatus ? (
+                <div className={studentCreateStatus.startsWith("Error:") ? "error" : ""}>{studentCreateStatus}</div>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Students table */}
           {!students ? (
-            <div className="notice" style={{ marginTop: 10 }}>Loading students…</div>
+            <div className="notice" style={{ marginTop: 10 }}>
+              Loading students…
+            </div>
           ) : students.length === 0 ? (
-            <div className="notice" style={{ marginTop: 10 }}>No students in the database yet.</div>
+            <div className="notice" style={{ marginTop: 10 }}>
+              No students in the database yet.
+            </div>
           ) : (
             <div style={{ overflow: "auto", marginTop: 10, border: "1px solid var(--border)", borderRadius: 12 }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -146,7 +237,7 @@ export function AdminPage() {
                       <td style={{ padding: 10, borderBottom: "1px solid var(--border)" }}>{s.program}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid var(--border)" }}>{s.year}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid var(--border)" }}>
-                        {tryString(s.created_at).slice(0, 19).replace("T", " ")}
+                        {String(s.created_at).slice(0, 19).replace("T", " ")}
                       </td>
                     </tr>
                   ))}
@@ -154,10 +245,6 @@ export function AdminPage() {
               </table>
             </div>
           )}
-
-          <div className="notice" style={{ marginTop: 10 }}>
-            Student creation UI can be added later. For the showcase, this view demonstrates a DB-backed registry.
-          </div>
         </div>
 
         {/* Existing admin data (leads/uploads) */}

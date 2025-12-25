@@ -1,0 +1,31 @@
+# Python
+.venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+**/.eslintcache
+
+# Git
+.git/
+.gitignore
+
+# Data artifacts (keep them out of build context; mount as volume instead)
+data/
+
+# Common caches / downloads
+.cache/
+**/.cache/
+**/.DS_Store
+
+# Large local artifacts if present
+models/
+downloads/

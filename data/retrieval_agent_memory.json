@@ -1,0 +1,176 @@
+{
+  "history": [
+    {
+      "query": "route me to the retrieval agent",
+      "answer": "As per your instructions, I can only answer questions based on the provided context. The context mentions that École Supérieure d'Ingénieurs Léonard de Vinci has 887 students, with 149 in apprenticeship training and 677 in initial training. It also provides information about the different tracks offered by the school, including Standard Track, Research Track, Start-up Track, HPC & IA Track, Quantum Track, UX Design Track, Aerospace & Defense, and Ingénieur d’affaires. Additionally, the context mentions that there are 254 students who have study interruptions, and provides the headcount for each year of study.\n\nBased on this information, I can answer the following questions:\n\n1. How many students are in apprenticeship training at École Supérieure d'Ingénieurs Léonard de Vinci?\nAnswer: 149 students are in apprenticeship training.\n2. How many students are in initial training at École Supérieure d'Ingénieurs Léonard de Vinci?\nAnswer: 677 students are in initial training.\n3. What is the total number of students at École Supérieure d'Ingénieurs Léonard de Vinci?\nAnswer: The total number of students at École Supérieure d'Ingénieurs Léonard de Vinci is 887.\n4. How many tracks are offered by École Supérieure d'Ingénieurs Léonard de Vinci?\nAnswer: École Supérieure d'Ingénieurs Léonard de Vinci offers 8 different tracks, including Standard Track, Research Track, Start-up Track, HPC & IA Track, Quantum Track, UX Design Track, Aerospace & Defense, and Ingénieur d’affaires.\n5. What is the average number of study interruptions for students at École Supérieure d'Ingénieurs Léonard de Vinci?\nAnswer: According to the context, there are 254 students with study interruptions, which is an average of 19.3% of the total student population.\n\nPlease let me know if you have any other questions based on the provided context.",
+      "sources": [
+        "2025 - Amphi Rentrée - A5.pdf"
+      ]
+    },
+    {
+      "query": "route me to the retrieval agent",
+      "answer": "Based on the provided context, the retrieval agent for École Supérieure d'Ingénieurs Léonard de Vinci can be found in the following documents:\n\n1. A5.pdf - This document provides information about the school's programs, admissions requirements, and curriculum. It also mentions the International semester or DD option available to students. (Relevance: 0.34)\n2. Learning Center - This document outlines the school's learning center and the various resources available to students, including course materials, TD sheets, quizzes, and report submissions. (Relevance: 0.17)\n3. WebAppsDeVinci - This document provides information about the school's web applications, including the transmission of information from various departments within the Pôle. (Relevance: 0.10)\n4. Viva Engage (Yammer) - This document mentions the use of Yammer for communication and collaboration among students, faculty, and staff. (Relevance: 0.07)\n\nBased on these documents, the retrieval agent for École Supérieure d'Ingénieurs Léonard de Vinci is most likely to be found in the A5.pdf document.",
+      "sources": [
+        "2025 - Amphi Rentrée - A5.pdf"
+      ]
+    },
+    {
+      "query": "route me to the retrieval agent",
+      "answer": "Based on the provided context, the Retrieval Agent for École Supérieure d'Ingénieurs Léonard de Vinci can be found in the following documents:\n\n1. [Amphi Rentrée - A5.pdf](https://www.esilv.fr/wp-content/uploads/2025/09/Amphi-Rentrée-A5.pdf): This document provides information on the school's programs, facilities, and services, as well as the admission requirements and process.\n2. [INFORMATION SYSTEMS 6 - Viva Engage(Yammer) WebApps](https://www.esilv.fr/wp-content/uploads/2025/09/INFORMATION-SYSTEMS-6-Viva-Engage-Yammer-WebApps.pdf): This document outlines the school's information systems, including the use of Yammer for communication and collaboration among students, faculty, and staff.\n3. [Learning Center](https://www.esilv.fr/wp-content/uploads/2025/09/LEARNING-CENTER.pdf): This document provides information on the school's learning center, including its mission, objectives, and services offered.\n4. [Transmission of informations fromthe various departments of the Pôle](https://www.esilv.fr/wp-content/uploads/2025/09/TRANSMISSION-DE-INFORMATIONS-DU-VAROUVER-DU-POLE.pdf): This document outlines the procedures for transmitting information between departments within the school.\n\nI hope this helps! Let me know if you have any further questions or need additional information.",
+      "sources": [
+        "2025 - Amphi Rentrée - A5.pdf"
+      ]
+    },
+    {
+      "query": "what are the rules for being late to class at esilv",
+      "answer": "At ESILV, there are specific rules for being late to class. According to the provided context from \"Traitement des absences élèves - ENGLISH.pdf\", every delay or failure of online sign-in is counted as an absence. For physical classes, if a student arrives more than 15 minutes after the start of an exam lasting more than 1 hour, they are allowed to enter once but no additional time will be granted (from \"2025 - 2026 ESILV - Consignes examens etudiants.pdf\"). For classes lasting 1 hour or less, no delays are accepted. The student must respect class timings and avoid unnecessary disturbances (from \"2025 - Amphi Rentrée - A5.pdf\"). For more information on absences due to personal reasons, sickness, etc., please refer to the provided context from \"Traitement des absences élèves - ENGLISH.pdf\".",
+      "sources": [
+        "2025 - 2026 ESILV - Consignes examens etudiants.pdf",
+        "2025 - Amphi Rentrée - A5.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "what are the rules for being late to class at esilv",
+      "answer": "According to the provided context, there are specific rules for being late to class at ESILV. For classes lasting more than 1 hour, late arrivals will be allowed to enter once, 15 minutes after the start of the exam, but no additional time will be granted (Document 4). For classes lasting 1 hour or less, no delays will be accepted (Document 4).\n\nFor both situations, any delay beyond the specified times will result in an absence from the class. However, if a student is late due to personal reasons, they should contact their academic referent to have their situation considered (Document 2).\n\nRegarding absences, they are tolerated but must remain limited in number. Every delay or failure of online sign-in is counted as an absence (Document 1). Absences are recorded on the DeVinci / Absences online Portal and noted on the report card (Document 1). The grade of 0/20 is applied to the test, examination or evaluation concerned (Documents 2 & 3).\n\nIf a student is absent due to sickness, they should provide a certificate within 7 working days after the absence (Document 5). For any other queries outside class hours, students are advised to contact their professors by email (Document 3).",
+      "sources": [
+        "2025 - 2026 ESILV - Consignes examens etudiants.pdf",
+        "2025 - Amphi Rentrée - A5.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "what are the rules for being late to class at esilv",
+      "answer": "According to the provided context, there are rules for being late to class at ESILV:\n\n1. For classes lasting more than 1 hour, late arrivals are allowed to enter once, 15 minutes after the start of the exam (Traitement des absences élèves - ENGLISH.pdf). Any delay of more than 15 minutes will result in absence from the exam (2025 - 2026 ESILV - Consignes examens etudiants.pdf).\n\n2. For classes lasting 1 hour or less, no delays are accepted (2025 - 2026 ESILV - Consignes examens etudiants.pdf).\n\n3. For queries outside class hours, students should contact their teacher by email (3 - 2025 - Amphi Rentrée - A5.pdf). If no reply is received within 24-48 hours, a follow-up email can be sent. If still unanswered, the student may then contact the teacher by email.\n\n4. For program-related or professional discussions, students should initially contact their teacher by email (3 - 2025 - Amphi Rentrée - A5.pdf). The teacher usually replies within 24 hours.\n\n5. If a student is late due to sickness, they must provide a certificate within 7 working days after the absence (Traitement des absences élèves - ENGLISH.pdf). The grade of 0/20 will be applied to the evaluation.",
+      "sources": [
+        "2025 - 2026 ESILV - Consignes examens etudiants.pdf",
+        "2025 - Amphi Rentrée - A5.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "how does the compensation work and how does it relate to absences count?",
+      "answer": "According to the provided context, there's no explicit information about the compensation system for absences in relation to the number of tolerated or excused absences. However, from the documents, we can gather that there are quotas of tolerated absences for student-apprentices and students under initial training status at ESILV.\n\nFor students under initial training status, after the 19th absence, they will receive a warning about their absences. At the 29th absence, the possibility of compensation between modules for validation of UE (Unit of Learning) is lost. After the 39th absence, the student will be considered non-assiduous and may face sanctions up to exclusion definite.\n\nUnfortunately, the documents do not provide details about how compensations work or if they are related to the number of absences that have been tolerated. It is recommended to refer to ESILV's official website or contact their administration for more detailed information regarding compensation and its relationship with absenteeism.",
+      "sources": [
+        "23 _ Règlement Pédagogique ESILV.pdf",
+        "35 _ Règlement Pédagogique ESILV.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf",
+        "Traitement des absences élèves.pdf"
+      ]
+    },
+    {
+      "query": "how does the compensation work and how does it relate to absences count?",
+      "answer": "According to the provided context, there's no specific information about the compensation process for absences at ESILV. However, it is mentioned that an absence counts towards a quota of tolerated absences for students in initial formation (Context documents [1], [2], [3]).\n\nFor student-apprentices, the tolerance for absences does not apply (Context document [2]). In case of excessive absenteeism, they would be summoned before the disciplinary council.\n\nThere's also no information about how these tolerated absences are compensated or whether there is a specific process for doing so. If further context or documents mention compensation processes related to absences at ESILV, I will provide an updated answer accordingly.",
+      "sources": [
+        "23 _ Règlement Pédagogique ESILV.pdf",
+        "35 _ Règlement Pédagogique ESILV.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf",
+        "Traitement des absences élèves.pdf"
+      ]
+    },
+    {
+      "query": "how does the compensation work and how does it relate to absences count?",
+      "answer": "Based on the provided context, there's no explicit information about the compensation mechanism for absences at ESILV. However, I can provide you with some insights regarding absences:\n\n1. Each absence from a class session is counted towards the total allowable absences (quota). For students in initial formation status, the sanctions for non-assiduity (excessive absences) are as follows:\n   - At the 19th absence: warning about absences\n   - At the 29th absence: loss of the possibility to compensate between modules for validation of UE (Units of Study)\n   - At the 39th absence: the student is considered non-assiduous and may face sanctions up to exclusion\n\n2. Student-apprentices do not benefit from the tolerance quotas for absences as mentioned above. In case of lack of assiduity, the apprentice student will be summoned before the disciplinary council.\n\n3. For regular absences (personal, medical appointments, etc.), the absence is recorded and tolerated, but limited in number. The grade of 0/20 is applied to the evaluation concerned. However, there's no information about compensation in this case.\n\n4. Regarding exceptional family events or imperative administrative summons on a fixed date, the absence is recorded as an excused absence, and the evaluation grade is neutralized. Again, there's no explicit mention of compensation.\n\nUnfortunately, the provided context does not contain enough information to explain how compensation works regarding absences at ESILV. It is recommended to refer directly to ESILV or their official documentation for more detailed information.",
+      "sources": [
+        "23 _ Règlement Pédagogique ESILV.pdf",
+        "35 _ Règlement Pédagogique ESILV.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf",
+        "Traitement des absences élèves.pdf"
+      ]
+    },
+    {
+      "query": "what are the rules for being late to class at esilv",
+      "answer": "At ESILV, punctuality is imperative and attendance is mandatory for both physical and online classes. According to the context provided, if a student is late to a class session or educational activity, it is counted as an absence.\n\nFor lectures lasting more than 1 hour, late arrivals are allowed to enter once, 15 minutes after the start of the exam, but no additional time will be granted (context: 4). For exams lasting 1 hour or less, no delays are accepted (context: 4).\n\nHowever, if a student is going through a particular personal situation, they can contact their academic referent to have their situation taken into account (context: 2). In such cases, the student doesn't need to provide a certificate.\n\nIf a student is absent due to sickness, they must provide a certificate within 7 working days after the absence. Failure to do so may result in the grade of 0/20 being applied to the evaluation (context: 5).",
+      "sources": [
+        "2025 - 2026 ESILV - Consignes examens etudiants.pdf",
+        "2025 - Amphi Rentrée - A5.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "hello, what are the rule for re doing a year at esilv",
+      "answer": "Based on the provided context, there is no specific information about repeating a year at ESILV. However, there is a mention of \"Extension of schooling\" for students enrolled \"in S11\". This might indicate an extension option for those who need more time to complete their studies, but without further details it's hard to confirm if this applies to repeating a year or just extending the duration of the course.\n\nFor more precise information about rules for redoing a year at ESILV, I would recommend visiting the official ESILV website or contacting them directly through the email provided: scholarite-esilv@devinci.fr. The HELP CENTER link in the context might also be helpful: https://help.devinci.fr.",
+      "sources": [
+        "2025 - Amphi Rentrée - A5.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf"
+      ]
+    },
+    {
+      "query": "how can i get bonus points for my classes ?",
+      "answer": "I don't have enough information in my knowledge base to answer that question. This could mean:\n- The information isn't in the indexed documents\n- The vector store hasn't been created yet (run: python -m ingestion.pipeline)\n- The query is too different from the available content",
+      "sources": []
+    },
+    {
+      "query": "ok, what are the exam rules at esilv",
+      "answer": "Here are the key exam rules at ESILV based on the provided context:\n\n1. Students must sign in at the beginning and end of each exam with their ID.\n2. Only authorized materials are permitted, such as draft paper, pens, pencils, erasers, rulers, non-programmable calculators (unless otherwise instructed), and chargers for online exams. No pencil cases or other writing materials are allowed on the table.\n3. For online exams, students must bring their own charged computer and charger. Screens should be bright enough to be visible to invigilators. Privacy screens are not permitted.\n4. Students must write with a blue or black ink pen (non-erasable). At the end of the exam, they must draw a large diagonal line to indicate the end of their composition.\n5. Communication or exchange of any materials during the exam is strictly forbidden, including authorized materials like calculators and course documents. Any violation will result in disciplinary action.\n6. Late arrivals are generally allowed if the exam lasts more than 1 hour, but no additional time will be granted. For exams lasting 1 hour or less, no delays are accepted.\n7. Bags, coats, and personal belongings must be left at the entrance to the room or as instructed by invigilators.\n8. Cell phones and other connected devices such as smartwatches must be turned off and stored in bags before taking a seat in the exam room.\n9. Ears should be uncovered, and hair should be tied back during the exams.",
+      "sources": [
+        "2025 - 2026 ESILV - Consignes examens etudiants.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf"
+      ]
+    },
+    {
+      "query": "i have an exam i cant attend, what should i do?",
+      "answer": "I don't have enough information to answer that question directly. According to the provided context, late arrivals may not be allowed access to the exam room and any delays will therefore result in absence from the exam. If you cannot attend your exam, it would be best to contact your school or teacher for guidance on what to do in this situation.",
+      "sources": [
+        "2025 - 2026 ESILV - Consignes examens etudiants.pdf",
+        "2025 - Amphi Rentrée - A5.pdf"
+      ]
+    },
+    {
+      "query": "tell me about the data and ai program at esilv",
+      "answer": "The Data and AI (Artificial Intelligence) program at ESILV is a specialized field of study, as mentioned in document [3]. This program aims to develop students' skills in handling data, including collection, modeling, storage, security, analysis, and interpretation.\n\nThe diploma earned from this MSc Computer Science program allows graduates to participate in the conception and development of new applications within the field of Decisional Informatics.\n\nGraduates of this program can pursue careers in various high-level roles such as Chief Data Officer, Data Engineer, Data Scientist, or Data Analyst, among others (as stated in documents [2] and [3]).\n\nThe 450-hour program is organized as follows:\n- 6 hours are dedicated to the Major Supervisor for Data and AI, Mrs. Nédra MELLOULI (information found in document [4]).",
+      "sources": [
+        "23 _ Règlement Pédagogique ESILV.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf",
+        "35 _ Règlement Pédagogique ESILV.pdf",
+        "ESILV_Equipement_informatique_eleves_2025-2026 - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "tell me about the data and ai program at esilv",
+      "answer": "The Data and AI (Artificial Intelligence) program at ESILV is a Master of Science (MSc) program that focuses on developing competencies in data-related fields. It aims to provide students with fundamental skills in programming, data collection, modeling, storage, security, analysis, and interpretation ([2], [3]).\n\nThe diploma obtained from this program allows graduates to participate in the conception and development of new applications within the domain of data-driven decision making. Potential career paths for graduates include roles such as Data Engineer, Data Scientist, Data Analyst, Chief Data Officer, Project Manager for Data Decision Making, and Database Administrator ([2]).\n\nThe program consists of 450 hours of training, the details of which are not provided in the context you've given. For more information about the specific structure of the program, please consult the appropriate ESILV documents.\n\nAdditionally, it is important to note that students have access to 1 Teraoctet of storing and sharing space on OneDrive during their studies ([1]).\n\nFor any additional questions or concerns related to the Data and AI program at ESILV, please refer to the contact information provided in [4] and [5].",
+      "sources": [
+        "23 _ Règlement Pédagogique ESILV.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf",
+        "35 _ Règlement Pédagogique ESILV.pdf",
+        "ESILV_Equipement_informatique_eleves_2025-2026 - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "tell me about the financial engineering program at esilv",
+      "answer": "Based on the provided context, there is no explicit mention of a Financial Engineering program at ESILV in the given documents. However, there is a reference to two new Master of Science (MSc) programs launched in 2025 – Financial Engineering and Aeronautical & Aerospatial Engineering [4]. Although not explicitly stated as part of ESILV, it can be inferred that these might be the new programs being referred to. For more precise information about the Financial Engineering program, it would be best to contact ESILV directly using the provided contact details.",
+      "sources": [
+        "2025 - Amphi Rentrée - A5.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf"
+      ]
+    },
+    {
+      "query": "tell me more about the numerical methods course at esilv",
+      "answer": "The provided context does not contain specific information about a \"numerical methods\" course at ESILV. However, it mentions several programs that involve numeric modeling, such as the Master of Science Computer Science & Data Science (CSDS) and the Master Spécialisé® Expert en Modélisation Numérique des Systèmes et Processus Industriels (EMNSPI). These programs may include numerical methods as part of their curriculum, but without additional context or specific course details, I cannot provide more information.\n\nFor further assistance, you might want to look for the syllabus or detailed program descriptions on ESILV's official website, which could contain more information about the courses and their content.",
+      "sources": [
+        "23 _ Règlement Pédagogique ESILV.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf",
+        "35 _ Règlement Pédagogique ESILV.pdf"
+      ]
+    },
+    {
+      "query": "string",
+      "answer": "I don't have enough information in my knowledge base to answer that question. This could mean:\n- The information isn't in the indexed documents\n- The vector store hasn't been created yet (run: python -m ingestion.pipeline)\n- The query is too different from the available content",
+      "sources": []
+    },
+    {
+      "query": "hello, how can i gain admisison to esilv",
+      "answer": "LLM error: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download",
+      "sources": [
+        "2025 - Amphi Rentrée - A5.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf"
+      ]
+    },
+    {
+      "query": "what about nw",
+      "answer": "I don't have enough information in my knowledge base to answer that question. This could mean:\n- The information isn't in the indexed documents\n- The vector store hasn't been created yet (run: python -m ingestion.pipeline)\n- The query is too different from the available content",
+      "sources": []
+    }
+  ],
+  "state": {}
+}

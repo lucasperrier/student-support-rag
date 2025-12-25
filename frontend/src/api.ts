@@ -4,7 +4,7 @@ export type ChatResponse = {
   sources?: unknown[];
 };
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8001";
 
 async function assertOk(res: Response) {
   if (res.ok) return;
@@ -87,6 +87,30 @@ export async function ingestUrl(url: string): Promise<{ status: string; saved_as
  */
 export async function reindexNow(): Promise<{ status: string; indexed_files: number }> {
   const res = await fetch(`${API_URL}/api/admin/reindex`, { method: "POST" });
+  await assertOk(res);
+  return res.json();
+}
+
+export async function createStudent(payload: {
+  student_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  program?: string;
+  year?: number;
+}): Promise<{ status: string; student: Student }> {
+  const res = await fetch(`${API_URL}/api/admin/students`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      student_id: payload.student_id,
+      first_name: payload.first_name,
+      last_name: payload.last_name,
+      email: payload.email,
+      program: payload.program ?? "",
+      year: payload.year ?? 0,
+    }),
+  });
   await assertOk(res);
   return res.json();
 }
