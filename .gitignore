@@ -25,11 +25,16 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# --- Project data artifacts (do not commit) ---
-data/vector_db/
-data/processed/
-data/raw/
-data/*.db
-data/*.sqlite*
+# Local data artifacts (ignore contents, allow placeholders)
+data/raw/*
+data/processed/*
+data/vector_db/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/vector_db/.gitkeep
+
+# Persisted files that should never be committed
 data/leads.json
-data/vector_index.json
+data/students.db
+data/vector_db/*.faiss
+data/vector_db/*metadata*.json
