@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+import re
 from typing import Dict, Any, List, Optional
 
 from .utils import BaseAgent
+
+EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 
 
 class Orchestrator(BaseAgent):
     """
     Orchestrator agent: Routes queries to the appropriate agent based on intent.
-    Inherits from BaseAgent for consistency, but acts as the central dispatcher.
+    Heuristic-first routing:
+      - form_agent when the user provides/asks to provide personal contact info (email, name)
+      - faq_agent only when there's a strong FAQ match (agent decides)
+      - retrieval_agent by default for ESILV info questions
     """
 
     def __init__(self, name: str, llm_client: Any, agents: List[BaseAgent], vector_store_path: str):
@@ -16,41 +22,76 @@ class Orchestrator(BaseAgent):
         self.agents = {agent.name: agent for agent in agents}
 
     def get_system_prompt(self) -> str:
-        return "You are the orchestrator. Classify queries and route to agents: retrieval for info, form for leads."
+        return "You are the orchestrator. Route queries to retrieval, FAQ, or form agents."
+
+    def _route_by_heuristics(self, query: str) -> Optional[str]:
+        q = (query or "").strip().lower()
+
+        # Lead capture / personal info
+        if EMAIL_RE.search(query):
+            return "form_agent"
+        if any(k in q for k in ["my name is", "i am ", "je m'appelle", "je suis"]):
+            return "form_agent"
+        if any(k in q for k in ["contact", "email", "apply", "application"]):
+            # Only treat as form if user intent is clearly to provide details
+            if any(k in q for k in ["here is", "it's", "it is", ":", "reach me", "call me"]):
+                return "form_agent"
+
+        return None
 
     def classify_query(self, query: str) -> str:
         """
-        Classify the query using Ollama for intent detection.
-        Returns the agent name key from self.agents.
+        LLM-based fallback classifier (only used when heuristics are inconclusive).
+        Returns one of: retrieval_agent, form_agent.
         """
         prompt = (
             "Classify the following user query into EXACTLY one of these categories. Respond with ONLY the category name.\n\n"
-            "- 'retrieval_agent': For questions about ESILV programs, courses, admissions, rules, calendars, or general information.\n"
-            "- 'form_agent': ONLY for queries explicitly involving providing or collecting personal info like names, emails, contacts, or applications.\n\n"
+            "- 'retrieval_agent': Questions about ESILV programs, courses, admissions, rules, calendars, internships, procedures.\n"
+            "- 'form_agent': ONLY if the user is providing/asking to store personal contact info (name/email/contact/application details).\n\n"
             f"Query: {query}\n\nCategory:"
         )
 
-        response = self.generate_response(prompt=prompt, context="", model="llama2")
-        response_clean = response.strip().lower()
+        response = self.generate_response(prompt=prompt, context="", model=None)
+        response_clean = (response or "").strip().lower()
 
         if "form_agent" in response_clean:
             return "form_agent"
-        if "retrieval_agent" in response_clean:
-            return "retrieval_agent"
-        if "faq_agent" in self.agents:
-            # Optional safe fallback if you want
-            return "faq_agent"
         return "retrieval_agent"
 
     def process(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        agent_name = self.classify_query(query)
+        # 1) Heuristics first
+        routed = self._route_by_heuristics(query)
 
-        if agent_name not in self.agents:
-            return {
-                "answer": f"Routing error: unknown agent '{agent_name}'.",
-                "sources": [],
-                "action": "error",
-            }
+        # 2) If not decided, prefer retrieval (and only use LLM classifier optionally)
+        if routed is None:
+            # If Ollama is down, this keeps the system functional.
+            try:
+                routed = self.classify_query(query)
+            except Exception:
+                routed = "retrieval_agent"
 
-        agent = self.agents[agent_name]
-        return agent.process(query, context=context)
+        # 3) Route to selected agent; use FAQ only as a fallback when it can actually answer
+        if routed == "retrieval_agent":
+            agent = self.agents.get("retrieval_agent")
+            if agent is None:
+                return {"answer": "Routing error: retrieval agent not configured.", "sources": [], "action": "error"}
+            return agent.process(query, context=context)
+
+        if routed == "form_agent":
+            agent = self.agents.get("form_agent")
+            if agent is None:
+                return {"answer": "Routing error: form agent not configured.", "sources": [], "action": "error"}
+            return agent.process(query, context=context)
+
+        # Optional FAQ fallback: try it, but if it returns the generic "don't have that" message,
+        # fall back to retrieval.
+        faq = self.agents.get("faq_agent")
+        if faq is not None:
+            faq_out = faq.process(query, context=context)
+            if isinstance(faq_out, dict) and "sources" in faq_out and faq_out.get("sources"):
+                return faq_out
+
+        retrieval = self.agents.get("retrieval_agent")
+        if retrieval is None:
+            return {"answer": "Routing error: retrieval agent not configured.", "sources": [], "action": "error"}
+        return retrieval.process(query, context=context)
