@@ -11,18 +11,31 @@ This repo contains:
 
 ---
 
-## Key ideas
+## What you can do (features)
 
-### RAG (Retrieval-Augmented Generation)
-Instead of answering from general model knowledge, the assistant:
-1. **retrieves** the most relevant chunks from the indexed ESILV documents (FAISS),
-2. **generates** an answer using only that context (grounded prompt).
+### Chat (RAG + agents)
+- Ask questions about ESILV and get **document-grounded** answers (RAG).
+- Responses can include **sources** (filenames) when available.
+- Requests are routed by an **Orchestrator**:
+  - `RetrievalAgent`: information queries grounded in documents (RAG)
+  - `FormAgent`: lead collection (name/email/interest) → `data/leads.json`
+  - `FAQAgent`: deterministic answers for a few known questions
 
-### Multi-agent orchestration
-Requests are routed by an `Orchestrator` to specialized agents:
-- `RetrievalAgent`: information queries grounded in documents (RAG)
-- `FormAgent`: lead collection (name/email/interest) → `data/leads.json`
-- `FAQAgent`: deterministic answers for a few known questions
+### Upload documents
+- Upload PDFs/HTML/TXT via the UI or API.
+- Files are saved under `data/raw/`.
+
+### Reindex (build/rebuild FAISS)
+- Rebuild the vector index from `data/raw/` via CLI or admin endpoint.
+- Outputs are stored under `data/vector_db/`.
+
+### Admin / monitoring
+- View uploaded docs (from a lightweight stub index for display).
+- View captured leads (`data/leads.json`).
+- Optional student registry endpoints backed by SQLite (`data/students.db`).
+
+### Web ingestion (URL → raw text file)
+- Provide a URL → the backend fetches the content and saves a timestamped `.txt` into `data/raw/`.
 
 ---
 
@@ -53,19 +66,23 @@ Other local runtime artifacts:
 - `data/processed/` — optional intermediate outputs
 - `data/leads.json` — captured leads (FormAgent)
 - `data/students.db` — SQLite DB (admin/student endpoints)
-- `data/vector_index.json` — *demo/stub index* used for admin upload display only (not used for retrieval)
+- `data/vector_index.json` — **stub/demo index** used for admin upload display only (not used for retrieval)
 
 ---
 
 ## Requirements
 
+### Local (no Docker)
 - Python 3.x
-- Recommended: create a virtualenv
-- Optional (for generation): **Ollama** running locally (the agents call Ollama via the `ollama` Python package)
+- Node.js + npm (for the React frontend)
+- Optional (for generation): **Ollama** running locally (agents call Ollama via the `ollama` Python package)
+
+### Docker
+- Docker + Docker Compose (recommended) or Docker only
 
 ---
 
-## Quick start (backend + frontend)
+## Quick start (no Docker)
 
 ### 1) Python setup
 ```bash
@@ -74,13 +91,35 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2) Build the vector index (RAG ingestion)
+### 2) (Optional) Start Ollama for generation
+If you want full answers (not just retrieval), start Ollama in a separate terminal:
+```bash
+ollama serve
+```
+
+If needed, pull the model (default: `llama2`):
+```bash
+ollama pull llama2
+```
+
+You can override the model via:
+```bash
+export OLLAMA_MODEL=llama2
+```
+
+### 3) Add documents to index
+Put documents in:
+```bash
+data/raw/
+```
+
+### 4) Build the vector index (RAG ingestion)
 Indexes everything in `data/raw/` into `data/vector_db/index(.faiss + _metadata.json)`:
 ```bash
 python -m ingestion.pipeline --data-dir data/raw --output data/vector_db/index
 ```
 
-### 3) Run the backend API (FastAPI)
+### 5) Run the backend API (FastAPI)
 From repo root:
 ```bash
 uvicorn backend.main:app --reload --port 8001
@@ -89,7 +128,7 @@ uvicorn backend.main:app --reload --port 8001
 Backend will be available at:
 - `http://127.0.0.1:8001`
 
-### 4) Run the frontend (React/Vite)
+### 6) Run the frontend (React/Vite)
 In another terminal:
 ```bash
 cd frontend
@@ -99,9 +138,16 @@ npm run dev
 
 Frontend will use `VITE_API_URL` from `frontend/.env` (default: `http://127.0.0.1:8001`).
 
+### 7) Run tests
+```bash
+pytest -q
+```
+
+> Guideline: unit tests should not require a live Ollama daemon; mock LLM calls when needed.
+
 ---
 
-## Streamlit demo (optional)
+## Streamlit demo (optional, no Docker)
 
 This starts Streamlit and an embedded FastAPI server (in a background thread):
 
@@ -112,8 +158,44 @@ streamlit run app/main.py
 Notes:
 - The Streamlit demo includes **Chat / Upload / Admin** tabs.
 - Uploads are saved into `data/raw/`.
-- Admin views show uploaded docs using a *stub index* (`data/vector_index.json`).
+- Admin views show uploaded docs using a **stub index** (`data/vector_index.json`).
 - Real retrieval still relies on the FAISS index in `data/vector_db/index.faiss`.
+
+---
+
+## Quick start (Docker)
+
+> This repository includes Docker support for backend + frontend. Data is persisted by mounting `./data` into the containers.
+
+### 1) Build and start
+From repo root:
+```bash
+docker compose up --build
+```
+
+Expected services:
+- frontend: `http://localhost:8080`
+- backend: `http://localhost:8001`
+
+### 2) Indexing with Docker
+You have two common options:
+
+**Option A — run ingestion on the host (recommended for dev):**
+```bash
+python -m ingestion.pipeline --data-dir data/raw --output data/vector_db/index
+```
+
+**Option B — run ingestion inside the backend container (if Python tooling is available there):**
+```bash
+docker compose exec backend python -m ingestion.pipeline --data-dir data/raw --output data/vector_db/index
+```
+
+### 3) Ollama with Docker
+Generation requires Ollama:
+- Run Ollama on your host (`ollama serve`) and ensure containers can reach it, **or**
+- Add an Ollama service to your docker-compose setup (not included by default).
+
+If Ollama is not available, the system may still retrieve context, but answer generation can fail or return an error message depending on agent behavior.
 
 ---
 
@@ -141,7 +223,8 @@ Core endpoints (see `backend/main.py`):
   Fetches the page and saves a `.txt` into `data/raw/`
 
 - `POST /api/admin/reindex`  
-  Runs `python -m ingestion.pipeline ...` to rebuild the FAISS index from `data/raw/`
+  Runs:
+  `python -m ingestion.pipeline --data-dir data/raw --output data/vector_db/index`
 
 Student registry (SQLite, demo/admin):
 - `GET /api/admin/students`
@@ -178,17 +261,6 @@ Public integration points (keep stable):
 
 ---
 
-## Testing
-
-Run unit tests:
-```bash
-pytest -q
-```
-
-Guideline: tests should not require a live Ollama daemon; mock LLM calls when needed.
-
----
-
 ## Troubleshooting
 
 ### “Vector store not found … run ingestion.pipeline”
@@ -198,7 +270,13 @@ python -m ingestion.pipeline --data-dir data/raw --output data/vector_db/index
 ```
 
 ### Ollama / LLM errors
-If the `ollama` Python package is missing or Ollama is not running, generation may fail or return an error string. The retrieval step can still run if the index exists, but answer generation depends on the LLM.
+If the `ollama` Python package is missing or Ollama is not running, generation may fail or return an error string. Retrieval can still work if the index exists, but answer generation depends on the LLM.
+
+### Uploads appear in Admin but chat retrieval doesn’t use them
+Admin uses `data/vector_index.json` (stub listing). Retrieval uses the FAISS index. Rebuild the FAISS index:
+```bash
+python -m ingestion.pipeline --data-dir data/raw --output data/vector_db/index
+```
 
 ---
 
