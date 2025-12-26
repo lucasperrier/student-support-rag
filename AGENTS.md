@@ -101,5 +101,3 @@ pytest -q
 - Ingestion:
   - keep the vector index path configurable and consistent end-to-end,
   - don’t commit large indexes or raw corpora; keep artifacts under `data/` and ensure `.gitignore` covers them.
-
-codex resume 019ab676-58a4-7360-8a1f-9883b705cf5c
