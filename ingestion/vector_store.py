@@ -132,8 +132,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 DEFAULT_VECTOR_STORE_TYPE = "faiss"  # "faiss" or "chroma"
-DEFAULT_INDEX_PATH = "data/vector_db"
-
+DEFAULT_INDEX_PATH = "data/vector_db/index"
 
 # =============================================================================
 # FAISS-based Vector Store

@@ -170,6 +170,26 @@
       "query": "what about nw",
       "answer": "I don't have enough information in my knowledge base to answer that question. This could mean:\n- The information isn't in the indexed documents\n- The vector store hasn't been created yet (run: python -m ingestion.pipeline)\n- The query is too different from the available content",
       "sources": []
+    },
+    {
+      "query": "What does the règlement pédagogique say about absences?",
+      "answer": "LLM error: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download",
+      "sources": [
+        "14 _ Règlement Intérieur EMLV ESILV IIM.pdf",
+        "30 _ Charte informatique DVHE 25-26.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf",
+        "Traitement des absences élèves.pdf"
+      ]
+    },
+    {
+      "query": "i have a frequently asked question",
+      "answer": "I don't have enough information in my knowledge base to answer that question. This could mean:\n- The information isn't in the indexed documents\n- The vector store hasn't been created yet (run: python -m ingestion.pipeline)\n- The query is too different from the available content",
+      "sources": []
+    },
+    {
+      "query": "hello",
+      "answer": "I don't have enough information in my knowledge base to answer that question. This could mean:\n- The information isn't in the indexed documents\n- The vector store hasn't been created yet (run: python -m ingestion.pipeline)\n- The query is too different from the available content",
+      "sources": []
     }
   ],
   "state": {}

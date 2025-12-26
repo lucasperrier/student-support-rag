@@ -77,17 +77,18 @@ def create_app() -> FastAPI:
         save_index(idx)
 
     # Instantiate agents (keep current wiring)
-    vector_store_path = storage_dir.joinpath("vector_db")
+    vector_store_base = storage_dir.joinpath("vector_db", "index")
+
     form_agent = FormAgent(name="form_agent", llm_client=None, leads_path=leads_path)
     faq_agent = FAQAgent(name="faq_agent", llm_client=None)
-    retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None)
+    retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None, vector_store_path=str(vector_store_base))
 
     agents = [faq_agent, form_agent, retrieval_agent]
     orchestrator = Orchestrator(
         name="orchestrator",
         llm_client=None,
         agents=agents,
-        vector_store_path=str(vector_store_path),
+        vector_store_path=str(vector_store_base),
     )
 
     @app.post("/api/chat")
@@ -167,14 +168,14 @@ def create_app() -> FastAPI:
     @app.post("/api/admin/reindex")
     async def reindex():
         """
-        Rebuild vector DB from files in data/raw using existing ingestion pipeline.
-        Keeps behavior consistent with the CLI: `python -m ingestion.pipeline --data-dir data/raw --out data/vector_db`.
+        Rebuild vector DB from files in data/raw using ingestion pipeline.
+        Writes to data/vector_db/index(.faiss + _metadata.json).
         """
         project_root = Path(__file__).parent.parent
         data_dir = project_root.joinpath("data", "raw")
-        out_dir = project_root.joinpath("data", "vector_db")
+        out_base = project_root.joinpath("data", "vector_db", "index")
 
-        out_dir.mkdir(parents=True, exist_ok=True)
+        out_base.parent.mkdir(parents=True, exist_ok=True)
 
         cmd = [
             sys.executable,
@@ -182,13 +183,14 @@ def create_app() -> FastAPI:
             "ingestion.pipeline",
             "--data-dir",
             str(data_dir),
-            "--out",
-            str(out_dir),
+            "--output",
+            str(out_base),
         ]
         subprocess.run(cmd, cwd=str(project_root), check=True)
 
         indexed_files = len([p for p in data_dir.iterdir() if p.is_file()])
         return {"status": "ok", "indexed_files": indexed_files}
+
 
     return app
 

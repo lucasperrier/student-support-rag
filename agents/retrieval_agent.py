@@ -62,6 +62,7 @@ TECHNICAL NOTES:
 - Memory efficient: doesn't store large context in memory
 """
 
+import os
 from typing import Dict, Any, Optional, List, Tuple
 import logging
 from pathlib import Path
@@ -84,7 +85,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_VECTOR_STORE_PATH = "data/vector_db/index"
 DEFAULT_TOP_K = 5
 DEFAULT_MIN_SIMILARITY = 0.3  # Minimum cosine similarity to consider chunk relevant
-DEFAULT_MODEL = "mistral"
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama2")
 
 
 # =============================================================================

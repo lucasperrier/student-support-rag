@@ -2,11 +2,18 @@
 
 # Agent communication helpers
 from abc import ABC, abstractmethod
+import os
 from typing import Dict, Any, List, Optional
 import json
 from pathlib import Path
-import ollama
 import requests  
+
+try:
+    import ollama  # type: ignore
+except Exception:  # pragma: no cover
+    ollama = None
+
+DEFAULT_OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama2")
 
 class BaseAgent(ABC):
     """
@@ -79,15 +86,19 @@ class BaseAgent(ABC):
             return self.memory.get("history", [])
         return self.memory.get("state", {}).get(key)
 
-    def generate_response(self, prompt: str, context: str = "", model: str = "llama2") -> str:
+    def generate_response(self, prompt: str, context: str = "", model: Optional[str] = None) -> str:
         """Helper: Call local Ollama LLM to generate a response."""
+        if ollama is None:
+            return "LLM error: Ollama python package is not installed."
+
+        chosen_model = model or DEFAULT_OLLAMA_MODEL
         full_prompt = f"{self.get_system_prompt()}\n\nContext: {context}\n\nQuery: {prompt}"
         try:
-            response = ollama.generate(model=model, prompt=full_prompt, options={"timeout": 300})  # Increased timeout to 300 seconds
+            response = ollama.generate(model=chosen_model, prompt=full_prompt, options={"timeout": 300})
             return response.get("response", "No response from Ollama.")
         except Exception as e:
             return f"LLM error: {str(e)}"
-        
+
     def log_action(self, action: str):
         """Log agent actions for monitoring."""
         print(f"[{self.name}] {action}")  # Replace with proper logging

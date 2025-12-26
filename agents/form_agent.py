@@ -1,88 +1,129 @@
-# Collects name, email, interest
-from typing import Dict, Any, Optional
+from __future__ import annotations
+
 import json
+import re
+import time
 from pathlib import Path
+from typing import Dict, Any, Optional, List
+
 from .utils import BaseAgent
+
+EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+
 
 class FormAgent(BaseAgent):
     """
     Form agent: Handles structured form-filling for leads (name, email, interest).
-    Collects user info and stores in leads.json.
+
+    Behavior:
+    - Extract name/email/interest when present
+    - If missing required fields, ask for them
+    - Persist to leads.json
     """
 
     def __init__(self, name: str, llm_client: Any, leads_path: Path = Path("data/leads.json")):
-        tools = [
-            {"name": "save_lead", "description": "Save a lead to file", "function": self._save_lead}
-        ]
-        super().__init__(name, llm_client, tools, memory_path=None)  # No persistent memory needed
+        tools = [{"name": "save_lead", "description": "Save a lead to file", "function": self._save_lead}]
+        super().__init__(name, llm_client, tools, memory_path=None)
+
         self.leads_path = leads_path
         self.leads_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.leads_path.exists():
-            self.leads_path.write_text("[]")
+            self.leads_path.write_text("[]", encoding="utf-8")
 
     def get_system_prompt(self) -> str:
         return (
-            "You are the form agent for ESILV admissions. Collect name, email, and interest. "
-            "If info is missing, prompt politely. Once collected, save and confirm."
+            "You are the form agent for ESILV admissions. Your job is to collect name, email, and interest. "
+            "If information is missing, ask politely and clearly. Once name and email are provided, save the lead."
         )
 
     def process(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """
-        Process form-related queries: Extract or prompt for name, email, interest.
-        :param query: User message (may contain form data).
-        :param context: Optional context.
-        :return: Response dict with answer, action.
-        """
-        # Simple extraction (stub; replace with NLP for robustness)
-        name = self._extract_field(query, ["name", "my name is"])
-        email = self._extract_field(query, ["email", "@"])
-        interest = self._extract_field(query, ["interest", "interested in"])
+        name = self._extract_name(query)
+        email = self._extract_email(query)
+        interest = self._extract_interest(query)
 
-        if name and email:
-            # Save lead
-            lead = {"id": f"lead-{len(self._load_leads()) + 1}", "name": name, "email": email, "interest": interest or ""}
-            self.call_tool("save_lead", {"lead": lead})
-            self.log_action(f"Saved lead: {name}")
+        missing: List[str] = []
+        if not name:
+            missing.append("full name")
+        if not email:
+            missing.append("email address")
+
+        if missing:
             return {
-                "answer": f"Thanks, {name}! Your contact info has been saved. We'll reach out about {interest or 'ESILV programs'}.",
+                "answer": f"To help with admissions, I need your {', '.join(missing)}. Please provide it.",
                 "sources": [],
-                "action": "lead_saved"
-            }
-        else:
-            # Prompt for missing info
-            missing = []
-            if not name:
-                missing.append("full name")
-            if not email:
-                missing.append("email address")
-            prompt = f"I need your {', '.join(missing)} to help with admissions. Please provide them."
-            return {
-                "answer": prompt,
-                "sources": [],
-                "action": "collect_lead"
+                "action": "collect_lead",
             }
 
-    def _extract_field(self, text: str, keywords: list) -> Optional[str]:
-        """Simple keyword-based extraction (stub)."""
-        text_lower = text.lower()
-        for kw in keywords:
-            if kw in text_lower:
-                # Naive: take next word; improve with regex/NLP
-                parts = text.split()
-                idx = next((i for i, p in enumerate(parts) if kw.lower() in p.lower()), -1)
-                if idx + 1 < len(parts):
-                    return parts[idx + 1]
+        lead = {
+            "id": f"lead-{int(time.time() * 1000)}",
+            "name": name,
+            "email": email,
+            "interest": interest or "",
+        }
+        self.call_tool("save_lead", {"lead": lead})
+        self.log_action(f"Saved lead: {name} <{email}>")
+
+        return {
+            "answer": f"Thanks, {name}! I saved your contact info. {('Interest: ' + interest) if interest else ''}".strip(),
+            "sources": [],
+            "action": "lead_saved",
+        }
+
+    def _extract_email(self, text: str) -> Optional[str]:
+        m = EMAIL_RE.search(text)
+        return m.group(0) if m else None
+
+    def _extract_name(self, text: str) -> Optional[str]:
+        """
+        Heuristic name extraction:
+        - "my name is John Doe" => John Doe
+        - "I am John Doe" => John Doe
+        - Otherwise: None (avoid extracting a random word)
+        """
+        patterns = [
+            r"\bmy name is\s+([A-Za-zÀ-ÖØ-öø-ÿ' -]{2,})",
+            r"\bi am\s+([A-Za-zÀ-ÖØ-öø-ÿ' -]{2,})",
+            r"\bje m'appelle\s+([A-Za-zÀ-ÖØ-öø-ÿ' -]{2,})",
+            r"\bje suis\s+([A-Za-zÀ-ÖØ-öø-ÿ' -]{2,})",
+        ]
+        for pat in patterns:
+            m = re.search(pat, text, flags=re.IGNORECASE)
+            if m:
+                candidate = m.group(1).strip()
+                # Stop at punctuation that usually ends the name segment
+                candidate = re.split(r"[.,;:!?\n\r\t]", candidate)[0].strip()
+                # Avoid capturing "..." very long strings
+                if 2 <= len(candidate) <= 60:
+                    return candidate
         return None
 
-    def _save_lead(self, lead: Dict[str, Any]):
-        """Tool: Save lead to JSON file."""
+    def _extract_interest(self, text: str) -> Optional[str]:
+        """
+        Heuristic interest extraction:
+        - "I'm interested in X"
+        - "interest: X"
+        """
+        patterns = [
+            r"\binterested in\s+(.+)$",
+            r"\binterest\s*:\s*(.+)$",
+            r"\bje suis intéressé(?:e)? par\s+(.+)$",
+        ]
+        for pat in patterns:
+            m = re.search(pat, text, flags=re.IGNORECASE)
+            if m:
+                candidate = m.group(1).strip()
+                candidate = re.split(r"[.\n\r]", candidate)[0].strip()
+                if candidate:
+                    return candidate[:120]
+        return None
+
+    def _save_lead(self, lead: Dict[str, Any]) -> None:
         leads = self._load_leads()
         leads.append(lead)
-        self.leads_path.write_text(json.dumps(leads, ensure_ascii=False, indent=2))
+        self.leads_path.write_text(json.dumps(leads, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    def _load_leads(self) -> list:
-        """Load leads from file."""
+    def _load_leads(self) -> List[Dict[str, Any]]:
         try:
-            return json.loads(self.leads_path.read_text())
+            return json.loads(self.leads_path.read_text(encoding="utf-8"))
         except Exception:
             return []

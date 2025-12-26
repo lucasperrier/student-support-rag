@@ -1,203 +1,244 @@
-# Entry point for Streamlit app
+"""
+Streamlit entry point.
+
+This Streamlit app starts a small FastAPI server in a background thread (once per
+Streamlit session) and renders three tabs:
+- Chat: talks to /api/chat (agent orchestrator)
+- Upload: uploads a file to /api/upload (demo persistence)
+- Admin: reads /api/admin (leads + uploaded docs list)
+
+Notes:
+- The "real" RAG ingestion + FAISS index lives in ingestion/ and data/vector_db/index(.faiss).
+- The /api/upload route stores raw files and also maintains a small JSON "stub index"
+  (data/vector_index.json) used only for admin display; retrieval uses the FAISS index.
+"""
+
+from __future__ import annotations
+
+import json
+import sys
 import threading
 import time
-import os
-import json
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, List
 
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent))  # Add project root
 import streamlit as st
-import requests
-import chat as chat_ui  # Now absolute
-import uploader as upload_ui
-import admin as admin_ui
-import config
 
-from agents.orchestrator import Orchestrator
-from agents.form_agent import FormAgent
-from agents.retrieval_agent import RetrievalAgent  # Stub
-from agents.faq_agent import FAQAgent
+# Ensure project root is importable when running "streamlit run app/main.py"
+sys.path.append(str(Path(__file__).parent.parent))
+
+import admin as admin_ui  # noqa: E402
+import chat as chat_ui  # noqa: E402
+import config  # noqa: E402
+import uploader as upload_ui  # noqa: E402
+
+from agents.faq_agent import FAQAgent  # noqa: E402
+from agents.form_agent import FormAgent  # noqa: E402
+from agents.orchestrator import Orchestrator  # noqa: E402
+from agents.retrieval_agent import RetrievalAgent  # noqa: E402
 
 
-# Start FastAPI server in background (only once)
-if "api_started" not in st.session_state:
-    st.session_state["api_started"] = True
+# =============================================================================
+# Paths / storage
+# =============================================================================
 
-    def _start_api():
+@dataclass(frozen=True)
+class StoragePaths:
+    storage_dir: Path
+    raw_dir: Path
+    processed_dir: Path
+    leads_path: Path
+    stub_index_path: Path
+    vector_store_path: Path  # base path, expects "{vector_store_path}.faiss"
+
+
+def _get_storage_paths() -> StoragePaths:
+    storage_dir = Path(__file__).parent.joinpath("..", "data").resolve()
+    raw_dir = storage_dir.joinpath("raw")
+    processed_dir = storage_dir.joinpath("processed")
+    leads_path = storage_dir.joinpath("leads.json")
+    stub_index_path = storage_dir.joinpath("vector_index.json")
+
+    vector_store_dir = storage_dir.joinpath("vector_db")
+    vector_store_path = vector_store_dir.joinpath("index")
+
+    return StoragePaths(
+        storage_dir=storage_dir,
+        raw_dir=raw_dir,
+        processed_dir=processed_dir,
+        leads_path=leads_path,
+        stub_index_path=stub_index_path,
+        vector_store_path=vector_store_path,
+    )
+
+
+def _ensure_storage(paths: StoragePaths) -> None:
+    paths.raw_dir.mkdir(parents=True, exist_ok=True)
+    paths.processed_dir.mkdir(parents=True, exist_ok=True)
+    paths.vector_store_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not paths.leads_path.exists():
+        paths.leads_path.write_text("[]", encoding="utf-8")
+
+    if not paths.stub_index_path.exists():
+        paths.stub_index_path.write_text("[]", encoding="utf-8")
+
+
+# =============================================================================
+# Demo stub index (used for upload/admin only)
+# =============================================================================
+
+def _load_stub_index(stub_index_path: Path) -> List[Dict[str, Any]]:
+    try:
+        return json.loads(stub_index_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def _save_stub_index(stub_index_path: Path, idx: List[Dict[str, Any]]) -> None:
+    stub_index_path.write_text(json.dumps(idx, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _stub_ingest_text(stub_index_path: Path, doc_id: str, text: str, meta: Dict[str, Any]) -> None:
+    idx = _load_stub_index(stub_index_path)
+    idx.append({"id": doc_id, "text": text, "meta": meta})
+    _save_stub_index(stub_index_path, idx)
+
+
+# =============================================================================
+# Agents
+# =============================================================================
+
+def _create_orchestrator(paths: StoragePaths) -> Orchestrator:
+    """
+    Wire up the orchestrator and agents.
+
+    RetrievalAgent is configured to use the FAISS index at:
+        {paths.vector_store_path}.faiss
+    which matches the ingestion pipeline defaults (data/vector_db/index.faiss).
+    """
+    form_agent = FormAgent(name="form_agent", llm_client=None, leads_path=paths.leads_path)
+    faq_agent = FAQAgent(name="faq_agent", llm_client=None)
+    retrieval_agent = RetrievalAgent(
+        name="retrieval_agent",
+        llm_client=None,
+        vector_store_path=str(paths.vector_store_path),
+    )
+
+    agents = [faq_agent, form_agent, retrieval_agent]
+    return Orchestrator(
+        name="orchestrator",
+        llm_client=None,
+        agents=agents,
+        vector_store_path=str(paths.vector_store_path),  # accepted; currently unused by orchestrator
+    )
+
+
+# =============================================================================
+# FastAPI bootstrap (runs in background thread)
+# =============================================================================
+
+def _build_fastapi_app(paths: StoragePaths):
+    # Import here so importing app/main.py doesn't require FastAPI unless you run the app.
+    from fastapi import FastAPI, File, Form, UploadFile
+    from fastapi.middleware.cors import CORSMiddleware
+    from pydantic import BaseModel
+
+    app = FastAPI(title="ESILV Smart Assistant API")
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    orchestrator = _create_orchestrator(paths)
+
+    class ChatRequest(BaseModel):
+        message: str
+
+    @app.post("/api/chat")
+    async def chat_endpoint(req: ChatRequest):
+        user_msg = req.message.strip()
+        return orchestrator.process(user_msg)
+
+    @app.post("/api/upload")
+    async def upload_endpoint(file: UploadFile = File(...)):
+        content = await file.read()
+        filename = file.filename
+        dst = paths.raw_dir.joinpath(filename)
+        dst.write_bytes(content)
+
         try:
-            # ...existing code (the entire _start_api function body)...
+            text = content.decode("utf-8")
+        except Exception:
+            text = f"[binary file saved: {filename}]"
+
+        doc_id = f"doc-{int(time.time() * 1000)}"
+        _stub_ingest_text(paths.stub_index_path, doc_id, text, {"filename": filename})
+        return {"status": "ok", "filename": filename, "doc_id": doc_id}
+
+    @app.get("/api/admin")
+    async def admin_endpoint():
+        leads = json.loads(paths.leads_path.read_text(encoding="utf-8"))
+        index = _load_stub_index(paths.stub_index_path)
+        uploads = [{"id": it["id"], "meta": it.get("meta", {})} for it in index]
+        return {"leads": leads, "uploads": uploads}
+
+    @app.post("/api/admin/lead")
+    async def create_lead(name: str = Form(...), email: str = Form(...), interest: str = Form("")):
+        leads = json.loads(paths.leads_path.read_text(encoding="utf-8"))
+        lead = {
+            "id": f"lead-{int(time.time() * 1000)}",
+            "name": name,
+            "email": email,
+            "interest": interest,
+        }
+        leads.append(lead)
+        paths.leads_path.write_text(json.dumps(leads, ensure_ascii=False, indent=2), encoding="utf-8")
+        return {"status": "ok", "lead": lead}
+
+    return app
 
 
-            # import here to avoid importing FastAPI/uvicorn during static analysis
-            from fastapi import FastAPI, UploadFile, File, Form
-            from fastapi.middleware.cors import CORSMiddleware
-            from pydantic import BaseModel
-            from typing import List, Dict, Any
-            import uvicorn
+def _start_api_server() -> None:
+    try:
+        import uvicorn
 
-            app = FastAPI(title="ESILV Smart Assistant API")
+        paths = _get_storage_paths()
+        _ensure_storage(paths)
 
-            # allow Streamlit frontend to call API
-            app.add_middleware(
-                CORSMiddleware,
-                allow_origins=["*"],
-                allow_methods=["*"],
-                allow_headers=["*"],
-            )
-
-            # simple in-memory stores (persist to disk for demo)
-            storage_dir = Path(__file__).parent.joinpath("..", "data")
-            raw_dir = storage_dir.joinpath("raw")
-            processed_dir = storage_dir.joinpath("processed")
-            leads_path = storage_dir.joinpath("leads.json")
-            index_path = storage_dir.joinpath("vector_index.json")
-            raw_dir.mkdir(parents=True, exist_ok=True)
-            processed_dir.mkdir(parents=True, exist_ok=True)
-            if not leads_path.exists():
-                leads_path.write_text("[]")
-            if not index_path.exists():
-                index_path.write_text("[]")
-
-            # --- very small demo retrieval / RAG pipeline (stubbed) ---
-            # index: list of {"id":str, "text":str, "meta":{...}}
-            def load_index():
-                try:
-                    return json.loads(index_path.read_text())
-                except Exception:
-                    return []
-
-            def save_index(idx):
-                index_path.write_text(json.dumps(idx, ensure_ascii=False, indent=2))
-
-            def ingest_text(doc_id: str, text: str, meta: Dict[str, Any]):
-                idx = load_index()
-                idx.append({"id": doc_id, "text": text, "meta": meta})
-                save_index(idx)
-
-            def simple_search(query: str, top_k: int = 3):
-                idx = load_index()
-                q_words = set(query.lower().split())
-                scored = []
-                for item in idx:
-                    words = set(item["text"].lower().split())
-                    score = len(q_words & words)
-                    scored.append((score, item))
-                scored.sort(reverse=True, key=lambda x: x[0])
-                results = [it for s, it in scored if s > 0][:top_k]
-                # if nothing matches, return top-k most recent
-                if not results:
-                    results = [it for s, it in scored][:top_k]
-                return results
-
-            # Instantiate agents (use stubs for Person A)
-            vector_store_path = storage_dir.joinpath("vector_db")  # Person A configures this
-            # retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None, vector_store_path=str(vector_store_path))
-            form_agent = FormAgent(name="form_agent", llm_client=None, leads_path=leads_path)
-            faq_agent = FAQAgent(name="faq_agent", llm_client=None)  # Removed leads_path; uses default FAQs
-            retrieval_agent = RetrievalAgent(name="retrieval_agent", llm_client=None)
-            # agents = [faq_agent, form_agent]
-            agents = [faq_agent, form_agent, retrieval_agent]
+        app = _build_fastapi_app(paths)
+        uvicorn.run(app, host=config.API_HOST, port=config.API_PORT, log_level="warning")
+    except Exception as e:
+        print(f"Error starting FastAPI server: {e}")
+        import traceback
+        traceback.print_exc()
 
 
+def _ensure_api_started() -> None:
+    """
+    Start the FastAPI server once per Streamlit session.
 
-            # orchestrator: very simple rule-based
-            class ChatRequest(BaseModel):
-                message: str
+    This uses Streamlit's session_state to avoid re-launching the server on reruns.
+    """
+    if st.session_state.get("api_started"):
+        return
 
-            orchestrator = Orchestrator(name="orchestrator", llm_client=None, agents=agents, vector_store_path=str(vector_store_path))  # Added vector_store_path and agents list
-
-            @app.post("/api/chat")
-            async def chat_endpoint(req: ChatRequest):
-                user_msg = req.message.strip()
-                response = orchestrator.process(user_msg)
-                return response
-
-            # @app.post("/api/chat")
-            # async def chat_endpoint(req: ChatRequest):
-            #     user_msg = req.message.strip()
-            #     # form agent trigger: look for intent words
-            #     form_triggers = ["name", "email", "contact", "apply", "admission"]
-            #     if any(t in user_msg.lower() for t in form_triggers):
-            #         # ask for structured info (form agent)
-            #         resp = {
-            #             "answer": "I can help with admissions and collect contact details. Please provide your full name and email.",
-            #             "sources": [],
-            #             "action": "collect_lead",
-            #         }
-            #         return resp
-
-                # else use retrieval agent (RAG)
-                retrieved = simple_search(user_msg, top_k=3)
-                if not retrieved:
-                    answer = "Sorry — I couldn't find relevant documents. Try rephrasing or upload documents."
-                    return {"answer": answer, "sources": [], "action": "answer"}
-                # build a grounded answer (simulated LLM)
-                snippets = []
-                sources = []
-                for r in retrieved:
-                    snippets.append(r["text"][:400])
-                    sources.append({"id": r["id"], "meta": r.get("meta", {})})
-                answer = (
-                    "Simulated RAG answer: based on the following documents I found:\n\n"
-                    + "\n\n---\n\n".join(snippets)
-                    + "\n\nIf you need a concise summary ask me to summarize."
-                )
-                return {"answer": answer, "sources": sources, "action": "answer"}
-
-            @app.post("/api/upload")
-            async def upload_endpoint(file: UploadFile = File(...)):
-                # save file and do a trivial ingestion (store content or filename)
-                content = await file.read()
-                filename = file.filename
-                dst = raw_dir.joinpath(filename)
-                dst.write_bytes(content)
-                # attempt to decode text for simple ingestion
-                try:
-                    text = content.decode("utf-8")
-                except Exception:
-                    text = f"[binary file saved: {filename}]"
-                doc_id = f"doc-{int(time.time()*1000)}"
-                ingest_text(doc_id, text, {"filename": filename})
-                return {"status": "ok", "filename": filename, "doc_id": doc_id}
-            # @app.post("/api/upload")
-            # async def upload_endpoint(file: UploadFile = File(...)):
-            #     # ...existing code (save file)...
-            #     # After saving, trigger ingestion
-            #     pipeline.ingest_file(dst, doc_id)  # Assume pipeline has an ingest_file method; adjust based on implementation
-            #     return {"status": "ok", "filename": filename, "doc_id": doc_id}
-
-            @app.get("/api/admin")
-            async def admin_endpoint():
-                leads = json.loads(leads_path.read_text())
-                index = load_index()
-                uploads = [{"id": it["id"], "meta": it.get("meta", {})} for it in index]
-                return {"leads": leads, "uploads": uploads}
-
-            @app.post("/api/admin/lead")
-            async def create_lead(name: str = Form(...), email: str = Form(...), interest: str = Form("")):
-                leads = json.loads(leads_path.read_text())
-                lead = {"id": f"lead-{int(time.time()*1000)}", "name": name, "email": email, "interest": interest}
-                leads.append(lead)
-                leads_path.write_text(json.dumps(leads, ensure_ascii=False, indent=2))
-                return {"status": "ok", "lead": lead}
-
-            # Run uvicorn
-            uvicorn.run(app, host="127.0.0.1", port=8001, log_level="warning")
-
-        except Exception as e:
-            print(f"Error starting FastAPI server: {e}")
-            import traceback
-            traceback.print_exc()
-        
-    t = threading.Thread(target=_start_api, daemon=True)
+    st.session_state["api_started"] = True
+    t = threading.Thread(target=_start_api_server, daemon=True)
     t.start()
-    # basic wait for server to be usable
-    time.sleep(0.7)
+    time.sleep(0.7)  # allow uvicorn to bind
 
-# Streamlit UI — top-level layout
+
+# =============================================================================
+# Streamlit UI
+# =============================================================================
+
+_ensure_api_started()
+
 st.set_page_config(page_title="ESILV Smart Assistant", layout="wide")
 st.title("ESILV Smart Assistant (Streamlit + FastAPI demo)")
 

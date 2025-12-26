@@ -1,0 +1,34 @@
+{
+  "history": [
+    {
+      "query": "What programs does ESILV offer?",
+      "answer": "According to the provided context, ESILV offers the following programs:\n\n1. Bachelor's Degree in Digital Engineering (A1)\n2. Bachelor's Degree in Digital Engineering (A2)\n3. BACHELOR IN DIGITAL ENGINEERING (Class of 2028)\n\nThese programs are offered at the Paris-La Défense Campus, Nantes Campus, and Montpellier Campus.",
+      "sources": [
+        "25-26 Fiches contact_ESILV_English.pdf",
+        "ESILV_Equipement_informatique_eleves_2025-2026 - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "How do I apply to ESILV?",
+      "answer": "Thank you for your question! To apply to École Supérieure d'Ingénieurs Léonard de Vinci (ESILV), you can follow these steps:\n\n1. Check the admission requirements: Before applying, make sure you meet the admission requirements of ESILV, which include a high school diploma or equivalent, a language proficiency certificate (if applicable), and a letter of motivation. You can find more information on the school's website or by contacting the admissions office directly.\n2. Submit your application: Once you have gathered all the necessary documents, you can submit your application through the school's online platform. The application deadline is usually in January of each year for the academic year starting in September/October.\n3. Pay the application fee: There is an application fee of around €100 that you need to pay when submitting your application.\n4. Wait for the admission decision: After submitting your application, the admissions committee will review it and inform you of their decision within a few weeks. If you are accepted, you will receive an offer letter detailing the conditions of your admission.\n5. Respond to the offer: If you are interested in accepting the offer, make sure to respond within the specified deadline. Once you have confirmed your acceptance, you can begin preparing for your studies at ESILV.\n\nI hope this helps! Let me know if you have any further questions.",
+      "sources": [
+        "2025 - Amphi Rentrée - A5.pdf",
+        "25-26 Fiches contact_ESILV_English.pdf"
+      ]
+    },
+    {
+      "query": "When is the application deadline?",
+      "answer": "According to the provided documents, the application deadline for the ESILV program is September 30, 2025. This information can be found in the \"Context\" document under the heading \"Deadlines for sending documents to the Academic Department\".",
+      "sources": [
+        "25-26 Fiches contact_ESILV_English.pdf",
+        "Traitement des absences élèves - ENGLISH.pdf"
+      ]
+    },
+    {
+      "query": "What is the meaning of life?",
+      "answer": "I don't have enough information in my knowledge base to answer that question. This could mean:\n- The information isn't in the indexed documents\n- The vector store hasn't been created yet (run: python -m ingestion.pipeline)\n- The query is too different from the available content",
+      "sources": []
+    }
+  ],
+  "state": {}
+}
