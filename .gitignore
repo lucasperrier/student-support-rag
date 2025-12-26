@@ -25,16 +25,26 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# Local data artifacts (ignore contents, allow placeholders)
+# --- Data folder: keep structure, ignore generated artifacts ---
 data/raw/*
 data/processed/*
 data/vector_db/*
+
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/vector_db/.gitkeep
 
-# Persisted files that should never be committed
+# Generated DB / leads / memory (should never be committed)
+data/*.db
+data/*.sqlite*
 data/leads.json
-data/students.db
+data/*memory*.json
+data/vector_index.json
+
+# Vector indexes (legacy + canonical)
+data/*.faiss
+data/*metadata*.json
 data/vector_db/*.faiss
 data/vector_db/*metadata*.json
+data/vector_db/index.faiss
+data/vector_db/index_metadata.json
