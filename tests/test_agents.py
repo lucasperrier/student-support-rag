@@ -82,7 +82,7 @@ def orchestrator(dummy_retrieval_agent: DummyAgent, dummy_form_agent: DummyAgent
     return Orchestrator(
         name="orchestrator",
         llm_client=None,
-        agents=[dummy_retrieval_agent, dummy_form_agent],
+        agents=[dummy_retrieval_agent, dummy_form_agent, FAQAgent(name="faq_agent", llm_client=None)],
         vector_store_path="data/vector_db/index",
     )
 
@@ -92,6 +92,12 @@ def orchestrator(dummy_retrieval_agent: DummyAgent, dummy_form_agent: DummyAgent
 # =============================================================================
 
 class TestOrchestratorRouting:
+    def test_routes_to_faq_agent_for_known_faq_question_without_llm(self, orchestrator: Orchestrator):
+        out = orchestrator.process("what is esilv")
+        assert out.get("routed_agent") == "faq_agent"
+        assert out.get("sources"), "FAQ answers should include a 'faq' source when matched"
+        assert out["sources"][0].get("id") == "faq"
+
     def test_routes_to_form_agent_when_classifier_returns_form_agent(
         self,
         monkeypatch: pytest.MonkeyPatch,
@@ -116,6 +122,45 @@ class TestOrchestratorRouting:
         out = orchestrator.process("What are the internship dates?")
         assert out["action"] == "retrieval_agent"
         assert dummy_retrieval_agent.seen and dummy_retrieval_agent.seen[0]["query"] == "What are the internship dates?"
+
+    def test_llm_mode_routes_to_faq_when_llm_says_faq_and_faq_matches(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        orchestrator: Orchestrator,
+    ):
+        monkeypatch.setenv("ESILV_ORCHESTRATION_MODE", "llm")
+        _patch_generate_response(monkeypatch, orchestrator, "faq_agent")
+
+        out = orchestrator.process("what is esilv")
+        assert out.get("routed_agent") == "faq_agent"
+        assert out.get("sources")
+        assert out["sources"][0].get("id") == "faq"
+
+    def test_llm_mode_falls_back_to_retrieval_when_llm_says_faq_but_no_faq_match(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        orchestrator: Orchestrator,
+        dummy_retrieval_agent: DummyAgent,
+    ):
+        monkeypatch.setenv("ESILV_ORCHESTRATION_MODE", "llm")
+        _patch_generate_response(monkeypatch, orchestrator, "faq_agent")
+
+        out = orchestrator.process("what is the meaning of life")
+        assert out.get("routed_agent") == "retrieval_agent"
+        assert out["action"] == "retrieval_agent"
+        assert dummy_retrieval_agent.seen
+
+    def test_llm_mode_routes_to_form_when_llm_says_form(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        orchestrator: Orchestrator,
+    ):
+        monkeypatch.setenv("ESILV_ORCHESTRATION_MODE", "llm")
+        _patch_generate_response(monkeypatch, orchestrator, "form_agent")
+
+        # No email, but LLM chooses form_agent.
+        out = orchestrator.process("I'd like to leave my contact details")
+        assert out.get("routed_agent") == "form_agent"
 
     def test_fallback_routes_to_retrieval_agent_on_unexpected_classifier_output(
         self,
@@ -201,23 +246,20 @@ class TestFAQAgent:
     def test_faq_agent_returns_deterministic_answer_for_known_question(self):
         agent = FAQAgent(name="faq_agent", llm_client=None, tools=[], memory_path=None)  # type: ignore[arg-type]
 
-        # We don't know exact FAQ mappings; we only assert:
-        # - it returns a dict
-        # - answer is a string
-        out = agent.process("What is ESILV?")  # type: ignore[arg-type]
+        # Strict mode: must match a canonical FAQ key exactly when normalized.
+        out = agent.process("what is esilv")  # type: ignore[arg-type]
         assert isinstance(out, dict)
         assert isinstance(out.get("answer"), str)
-        assert "action" in out
+        assert out.get("sources"), "Exact FAQ matches should return sources"
+        assert out.get("action") == "answer"
 
     def test_faq_agent_normalization_is_case_and_whitespace_insensitive(self):
         agent = FAQAgent(name="faq_agent", llm_client=None, tools=[], memory_path=None)  # type: ignore[arg-type]
 
+        # Strict mode: punctuation matters after normalization; these should NOT match.
         out1 = agent.process("What is ESILV?")  # type: ignore[arg-type]
         out2 = agent.process("  what   is   esilv ?  ")  # type: ignore[arg-type]
-        assert isinstance(out1.get("answer"), str)
-        assert isinstance(out2.get("answer"), str)
-
-        # If both are mapped to the same FAQ entry, answers should match.
-        # If not mapped, they should still be strings (graceful behavior).
-        # Prefer a weak assertion to avoid brittle tests.
-        assert (out1["answer"] == out2["answer"]) or (out1["answer"] and out2["answer"])
+        assert out1.get("sources") == []
+        assert out2.get("sources") == []
+        assert out1.get("action") == "no_match"
+        assert out2.get("action") == "no_match"

@@ -1,4 +1,10 @@
 services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+
   backend:
     build:
       context: .
@@ -10,6 +16,12 @@ services:
       - ./data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      # Preferred for ollama Python client (used in agents/utils.py)
+      - OLLAMA_HOST=http://ollama:11434
+      # Kept for compatibility/documentation (not currently read by the code)
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - ollama
 
   frontend:
     build:
@@ -22,3 +34,7 @@ services:
       - "8080:80"
     depends_on:
       - backend
+
+volumes:
+  ollama:
+    # Named volume to persist downloaded models

@@ -85,7 +85,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_VECTOR_STORE_PATH = "data/vector_db/index"
 DEFAULT_TOP_K = 5
 DEFAULT_MIN_SIMILARITY = 0.3  # Minimum cosine similarity to consider chunk relevant
-DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama2")
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
 
 
 # =============================================================================

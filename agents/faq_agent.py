@@ -51,34 +51,27 @@ class FAQAgent(BaseAgent):
         )
 
     def process(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Answer only on exact normalized FAQ key match.
+
+        This keeps FAQ routing deterministic and avoids false positives where most
+        queries end up matching the "closest" FAQ.
+
+        If no exact match is found, we return empty sources so the orchestrator can
+        fall back to retrieval.
+        """
+
         qn = _normalize(query)
-        q_tokens = set(_tokenize(qn))
 
-        best = None  # (score, original_question, answer)
         for original_q, norm_q, answer in self._faq_items:
-            # Exact / substring match gets priority
-            if norm_q == qn or norm_q in qn or qn in norm_q:
-                best = (1.0, original_q, answer)
-                break
-
-            # Soft token overlap score
-            faq_tokens = set(_tokenize(norm_q))
-            if not faq_tokens:
-                continue
-            overlap = len(q_tokens & faq_tokens) / max(1, len(faq_tokens))
-            if best is None or overlap > best[0]:
-                best = (overlap, original_q, answer)
-
-        if best and best[0] >= 0.6:
-            _, matched_q, answer = best
-            return {
-                "answer": answer,
-                "sources": [{"id": "faq", "meta": {"question": matched_q}}],
-                "action": "answer",
-            }
+            if norm_q == qn:
+                return {
+                    "answer": answer,
+                    "sources": [{"id": "faq", "meta": {"question": original_q}}],
+                    "action": "answer",
+                }
 
         return {
-            "answer": "I don’t have that in my FAQ. Try asking your question again, or ask about a specific ESILV document topic.",
+            "answer": "",
             "sources": [],
-            "action": "answer",
+            "action": "no_match",
         }

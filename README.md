@@ -191,9 +191,26 @@ docker compose exec backend python -m ingestion.pipeline --data-dir data/raw --o
 ```
 
 ### 3) Ollama with Docker
-Generation requires Ollama:
-- Run Ollama on your host (`ollama serve`) and ensure containers can reach it, **or**
-- Add an Ollama service to your docker-compose setup (not included by default).
+Generation requires Ollama.
+
+This repo supports a single-command Docker stack (frontend + backend + Ollama):
+
+```bash
+docker compose up -d --build
+```
+
+Then open:
+- Frontend: http://localhost:8080
+- Backend API: http://localhost:8001
+
+#### First run: pull a model into the Ollama container
+The Ollama model cache is stored in the Docker named volume `ollama` (separate from any models you may have pulled on your host). On first run you must pull a model once:
+
+```bash
+docker compose exec ollama ollama pull llama2:latest
+```
+
+After that, generation should work without re-downloading unless you delete the `ollama` volume.
 
 If Ollama is not available, the system may still retrieve context, but answer generation can fail or return an error message depending on agent behavior.
 
