@@ -75,6 +75,7 @@ Other local runtime artifacts:
 ### Local (no Docker)
 - Python 3.x
 - Node.js + npm (for the React frontend)
+- **FAISS + embeddings dependencies**: `faiss-cpu` and `sentence-transformers` (used by ingestion + retrieval)
 - Optional (for generation): **Ollama** running locally (agents call Ollama via the `ollama` Python package)
 
 ### Docker
@@ -90,6 +91,10 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+Notes:
+- If you only want to run the UI/REST scaffolding without retrieval, you can skip FAISS/embeddings, but ingestion and retrieval will not work.
+- If `faiss-cpu` or `sentence-transformers` fail to install on your platform, use Docker or install system prerequisites for your Python version.
 
 ### 2) (Optional) Start Ollama for generation
 If you want full answers (not just retrieval), start Ollama in a separate terminal:
@@ -142,6 +147,8 @@ Frontend will use `VITE_API_URL` from `frontend/.env` (default: `http://127.0.0.
 ```bash
 pytest -q
 ```
+
+If you run tests from the repo root, `pytest.ini` ensures the workspace is on `PYTHONPATH` so imports like `agents.*` and `ingestion.*` work.
 
 > Guideline: unit tests should not require a live Ollama daemon; mock LLM calls when needed.
 
@@ -213,6 +220,10 @@ docker compose exec ollama ollama pull llama2:latest
 After that, generation should work without re-downloading unless you delete the `ollama` volume.
 
 If Ollama is not available, the system may still retrieve context, but answer generation can fail or return an error message depending on agent behavior.
+
+In practice:
+- retrieval works only if the FAISS index exists (`data/vector_db/index.faiss` + `data/vector_db/index_metadata.json`)
+- answers are still generated via the LLM (Ollama by default). If Ollama is down, you may get an error string instead of a full answer.
 
 ---
 

@@ -19,7 +19,16 @@ def _tokenize(text: str) -> List[str]:
 
 
 class FAQAgent(BaseAgent):
-    def __init__(self, name: str, llm_client: Any, faq_path: Optional[str] = None):
+    def __init__(
+        self,
+        name: str,
+        llm_client: Any,
+        faq_path: Optional[str] = None,
+        tools: Optional[List[Dict[str, Any]]] = None,
+        memory_path: Optional[str] = None,
+    ):
+        # NOTE: `tools` is accepted for backwards/interop compatibility with older tests/wiring.
+        # This agent does not expose tools currently; external tools are ignored.
         super().__init__(name, llm_client, tools=[], memory_path=None)
         self.faq_path = faq_path
         self.faqs = self._load_faqs()  # Dict of {"question": "answer"}

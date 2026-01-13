@@ -21,7 +21,16 @@ class FormAgent(BaseAgent):
     - Persist to leads.json
     """
 
-    def __init__(self, name: str, llm_client: Any, leads_path: Path = Path("data/leads.json")):
+    def __init__(
+        self,
+        name: str,
+        llm_client: Any,
+        leads_path: Path = Path("data/leads.json"),
+        tools: Optional[List[Dict[str, Any]]] = None,
+        memory_path: Optional[str] = None,
+    ):
+        # NOTE: `tools` is accepted for backwards/interop compatibility with older tests/wiring.
+        # This agent defines its own toolset internally; external tools are ignored.
         tools = [{"name": "save_lead", "description": "Save a lead to file", "function": self._save_lead}]
         super().__init__(name, llm_client, tools, memory_path=None)
 
