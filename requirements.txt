@@ -1,20 +1,33 @@
-fastapi>=0.110
-uvicorn[standard]>=0.23
-python-multipart>=0.0.9
-pydantic>=2.0
-sqlmodel>=0.0.20
+# Pinned to the versions the test suite is verified against (Python 3.12).
 
-# Retrieval / embeddings (keep what you actually use)
-faiss-cpu>=1.7.4
-sentence-transformers>=2.2.2
+# --- Backend / API ---
+fastapi==0.121.3
+uvicorn[standard]==0.38.0
+python-multipart==0.0.20
+pydantic==2.12.4
+sqlmodel==0.0.29
+requests==2.32.5
 
-# LangChain (for web ingestion / optional chains)
-langchain>=0.2
-langchain-community>=0.2
-beautifulsoup4>=4.12
+# --- Retrieval / embeddings ---
+faiss-cpu==1.13.0
+sentence-transformers==5.1.2
+numpy==2.3.5
 
-# Tests
-pytest>=8.0
-pytest-asyncio>=0.23
+# --- Document loading (PDF / HTML) ---
+pypdf==6.3.0
+beautifulsoup4==4.14.2
+lxml==6.0.2
 
-ollama>=0.1
+# --- Web ingestion (URL -> raw text) ---
+langchain==1.0.8
+langchain-community==0.4.1
+
+# --- LLM generation (local, optional at runtime) ---
+ollama==0.6.1
+
+# --- Streamlit demo (optional) ---
+streamlit==1.51.0
+
+# --- Tests ---
+pytest==9.0.1
+pytest-asyncio==1.3.0

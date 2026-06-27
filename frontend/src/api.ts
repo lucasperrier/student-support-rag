@@ -83,7 +83,7 @@ export async function ingestUrl(url: string): Promise<{ status: string; saved_as
 }
 
 /**
- * Triggers a backend re-index operation (you will add this endpoint in the backend).
+ * Triggers a backend re-index operation (POST /api/admin/reindex).
  */
 export async function reindexNow(): Promise<{ status: string; indexed_files: number }> {
   const res = await fetch(`${API_URL}/api/admin/reindex`, { method: "POST" });

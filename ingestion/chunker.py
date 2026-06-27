@@ -18,9 +18,8 @@ OUTPUTS:
   - char_count: Number of characters
 - Ready for embedding and vector storage
 
-PERSON B INTEGRATION:
-Person B doesn't directly call this module - it's used internally by the ingestion
-pipeline (pipeline.py). The flow is:
+INTEGRATION:
+This module is used internally by the ingestion pipeline (pipeline.py). The flow is:
   loader.py (Document) → text_cleaning.py (clean text) → chunker.py (chunks) → embedder.py
 
 EXAMPLE USAGE:

@@ -1,0 +1,22 @@
+{
+  "description": "Retrieval evaluation set for the sample document corpus (data/sample_docs/). Each item maps a question to the source file(s) that should appear in the retrieved results. Where information legitimately lives in more than one document, multiple acceptable sources are listed; a retrieval counts as a hit if ANY listed source is returned.",
+  "questions": [
+    { "question": "What engineering majors does ESILV offer?", "expected_sources": ["programs.md"] },
+    { "question": "Is the Data and Artificial Intelligence major taught using Python?", "expected_sources": ["programs.md"] },
+    { "question": "How many years is the ESILV engineering degree?", "expected_sources": ["programs.md"] },
+    { "question": "How do I apply to ESILV after the baccalaureate?", "expected_sources": ["admissions.md"] },
+    { "question": "What English proficiency test do international students need?", "expected_sources": ["admissions.md"] },
+    { "question": "Can I join ESILV directly after a CPGE preparatory class?", "expected_sources": ["admissions.md"] },
+    { "question": "When does the autumn semester start?", "expected_sources": ["academic_calendar.txt"] },
+    { "question": "When are the spring end-of-semester examinations?", "expected_sources": ["academic_calendar.txt"] },
+    { "question": "How long is the end-of-studies internship?", "expected_sources": ["internships.md", "academic_calendar.txt"] },
+    { "question": "Do I need a signed agreement before starting an internship?", "expected_sources": ["internships.md", "academic_calendar.txt"] },
+    { "question": "Is there a minimum gratuity for internships in France?", "expected_sources": ["internships.md"] },
+    { "question": "What is the work-study apprenticeship option at ESILV?", "expected_sources": ["internships.md"] },
+    { "question": "What laptop specifications are recommended for students?", "expected_sources": ["it_charter.txt"] },
+    { "question": "Am I allowed to share my student account credentials?", "expected_sources": ["it_charter.txt"] },
+    { "question": "Who organizes the annual integration weekend?", "expected_sources": ["campus_life.html"] },
+    { "question": "What can I use my student card for?", "expected_sources": ["campus_life.html"] },
+    { "question": "Where is the ESILV campus located?", "expected_sources": ["campus_life.html"] }
+  ]
+}

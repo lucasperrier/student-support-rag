@@ -94,13 +94,6 @@ class Orchestrator(BaseAgent):
         # --- 3) Default: retrieval ---
         return "retrieval_agent"
 
-    def _route_by_heuristics(self, query: str) -> Optional[str]:
-        """Deprecated: kept for backward compatibility.
-
-        Prefer using `route_query()` so all routing rules live in one place.
-        """
-        return None
-
     def classify_query(self, query: str) -> str:
         """
         LLM-based fallback classifier (only used when heuristics are inconclusive).

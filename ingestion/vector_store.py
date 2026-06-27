@@ -16,7 +16,7 @@ OUTPUTS:
 - Persisted index saved to disk for fast loading
 - Statistics about the vector store (count, dimension, etc.)
 
-PERSON B INTEGRATION:
+INTEGRATION:
 The retrieval agent calls search() to find relevant chunks:
 
     from ingestion.vector_store import get_vector_store
@@ -547,7 +547,7 @@ def get_vector_store(
     """
     Get or create global vector store instance.
 
-    This is the main function that Person B's retrieval agent should use.
+    This is the main entry point for the retrieval agent.
 
     Args:
         path: Optional path to load existing store
@@ -580,14 +580,14 @@ def get_vector_store(
 
 
 # =============================================================================
-# Convenience Function (for Person B)
+# Convenience Function
 # =============================================================================
 
 def search(query: str, top_k: int = 5) -> List[Tuple[str, Dict]]:
     """
     Search the global vector store.
 
-    THIS IS THE MAIN API FOR PERSON B's RETRIEVAL AGENT.
+    Main convenience API for the retrieval agent.
 
     Args:
         query: User query string

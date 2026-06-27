@@ -188,6 +188,23 @@ class TestOrchestratorRouting:
 # =============================================================================
 
 class TestFormAgent:
+    def test_extract_name_stops_at_connector_words(self, tmp_path: Path):
+        """Regression: the name must not swallow trailing clauses.
+
+        e.g. "My name is Jane Doe and my email is ..." -> "Jane Doe", not the whole tail.
+        """
+        agent = FormAgent(name="form_agent", llm_client=None, leads_path=tmp_path / "leads.json")
+        assert agent._extract_name("My name is Jane Doe and my email is jane@example.com") == "Jane Doe"
+        assert agent._extract_name("Hi, I am Pierre Martin, email pierre@example.com") == "Pierre Martin"
+        assert agent._extract_name("je m'appelle Léa Dubois et je suis intéressée") == "Léa Dubois"
+        # No name pattern -> None (avoid grabbing a random word)
+        assert agent._extract_name("When is the application deadline?") is None
+
+    def test_extract_interest_excludes_email(self, tmp_path: Path):
+        """Regression: an interest must not capture a trailing email address."""
+        agent = FormAgent(name="form_agent", llm_client=None, leads_path=tmp_path / "leads.json")
+        assert agent._extract_interest("I'm interested in the AI major, jane@example.com") == "the AI major"
+
     def test_form_agent_persists_lead_to_json(self, tmp_path: Path):
         """
         FormAgent should write captured leads to a JSON file.

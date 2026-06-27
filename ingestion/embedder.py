@@ -17,9 +17,8 @@ OUTPUTS:
 - Compatible with FAISS and ChromaDB vector stores
 - Each embedding is a dense vector that captures semantic meaning
 
-PERSON B INTEGRATION:
-Person B doesn't call this directly - it's used internally by the ingestion pipeline.
-The flow is:
+INTEGRATION:
+This module is used internally by the ingestion pipeline. The flow is:
   loader.py → text_cleaning.py → chunker.py → embedder.py → vector_store.py
 
 EXAMPLE USAGE:

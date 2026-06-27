@@ -15,14 +15,14 @@ OUTPUTS:
 - Processing statistics and logs
 - Ready-to-use vector database for retrieval agent
 
-PERSON B INTEGRATION:
-Person B doesn't need to call this directly - it's a one-time setup or periodic update.
+INTEGRATION:
+This isn't called directly at query time - it's a one-time setup or periodic update.
 After running the pipeline, the retrieval agent can use the vector store:
 
-    # Person A runs this once to ingest documents:
+    # Run once to ingest documents:
     python -m ingestion.pipeline --data-dir data/raw
 
-    # Then Person B's retrieval agent uses the resulting index:
+    # Then the retrieval agent uses the resulting index:
     from ingestion.vector_store import search
     results = search("What programs does ESILV offer?")
 
@@ -79,7 +79,7 @@ DESIGN DECISIONS:
 
 5. **CLI Interface**:
    - Argparse for command-line arguments
-   - Sensible defaults from CLAUDE.md guidance
+   - Sensible defaults for all options
    - Help text for all options
 
 TECHNICAL NOTES:

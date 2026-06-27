@@ -1,0 +1,29 @@
+ESILV IT Charter - Summary (Sample Document)
+
+Synthetic demo document for the RAG pipeline. Not an official ESILV document.
+
+This charter describes the acceptable use of the school's IT resources, including the
+network, computers, software, and student accounts.
+
+Accounts:
+- Each student receives a personal account to access the Wi-Fi network, the student
+  portal, and the learning management system.
+- Account credentials are personal and must not be shared with anyone.
+
+Acceptable use:
+- IT resources are provided primarily for academic purposes.
+- Users must not attempt to access data or systems they are not authorised to use.
+- Downloading or sharing illegal content is strictly forbidden.
+
+Equipment:
+- Students are expected to bring a personal laptop that meets the recommended technical
+  specifications published before the start of the year.
+- The recommended configuration includes a recent processor, at least 16 GB of memory,
+  and enough storage for development tools.
+
+Security:
+- Users must keep their operating system and antivirus up to date.
+- Any security incident or lost device must be reported to the IT support desk.
+
+Violations of the charter may lead to disciplinary measures as defined in the school's
+internal regulations.

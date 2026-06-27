@@ -101,7 +101,17 @@ class FormAgent(BaseAgent):
                 candidate = m.group(1).strip()
                 # Stop at punctuation that usually ends the name segment
                 candidate = re.split(r"[.,;:!?\n\r\t]", candidate)[0].strip()
-                # Avoid capturing "..." very long strings
+                # Stop at connector words that signal the name has ended
+                # (e.g. "Jane Doe and my email is ..." -> "Jane Doe")
+                candidate = re.split(
+                    r"\b(?:and|et|my|je|suis|i'?m|interested|interest|email|e-?mail|is|with|from|the|at|but)\b",
+                    candidate,
+                    maxsplit=1,
+                    flags=re.IGNORECASE,
+                )[0].strip()
+                # Names are short: keep at most the first 4 tokens
+                candidate = " ".join(candidate.split()[:4]).strip()
+                # Avoid capturing very long strings
                 if 2 <= len(candidate) <= 60:
                     return candidate
         return None
@@ -121,7 +131,9 @@ class FormAgent(BaseAgent):
             m = re.search(pat, text, flags=re.IGNORECASE)
             if m:
                 candidate = m.group(1).strip()
-                candidate = re.split(r"[.\n\r]", candidate)[0].strip()
+                # End the interest at a sentence break or list separator, and drop any email
+                candidate = re.split(r"[.,\n\r]", candidate)[0].strip()
+                candidate = EMAIL_RE.sub("", candidate).strip()
                 if candidate:
                     return candidate[:120]
         return None

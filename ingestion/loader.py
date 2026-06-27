@@ -1,4 +1,3 @@
-# PDF/HTML loading : lit les fichiers PDF/HTML et extrait le texte.
 """
 Document Loader Module
 
@@ -19,9 +18,9 @@ OUTPUTS:
   - source: Original file path
 - Returns None if file cannot be loaded (with error logged)
 
-PERSON B INTEGRATION:
-Person B doesn't directly call this module - it's used internally by the ingestion
-pipeline (pipeline.py). However, Person B should know that uploaded files flow through:
+INTEGRATION:
+This module is used internally by the ingestion pipeline (pipeline.py).
+Uploaded files flow through:
   User Upload (UI) → save to data/raw/ → pipeline.py → loader.py → text extraction
 
 The Document objects produced here feed into text_cleaning.py next.

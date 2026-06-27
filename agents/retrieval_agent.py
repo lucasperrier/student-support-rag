@@ -15,13 +15,12 @@ OUTPUTS:
 - sources: List of source documents used
 - action: "answer" (successful) or "error" (failed)
 
-PERSON B INTEGRATION:
-The orchestrator routes information queries to this agent:
+ORCHESTRATOR INTEGRATION:
+The Orchestrator routes information queries to this agent via `process()`:
 
     # In orchestrator.py
-    if intent == "information":
-        result = retrieval_agent.process(query)
-        return result["answer"]
+    result = retrieval_agent.process(query)
+    return result  # {"answer", "sources", "action"}
 
 DESIGN DECISIONS:
 
@@ -85,7 +84,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_VECTOR_STORE_PATH = "data/vector_db/index"
 DEFAULT_TOP_K = 5
 DEFAULT_MIN_SIMILARITY = 0.3  # Minimum cosine similarity to consider chunk relevant
-DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama2")
 
 
 # =============================================================================
