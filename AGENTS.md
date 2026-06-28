@@ -8,7 +8,6 @@ These notes are meant for contributors (and coding assistants) to make changes c
 
 - `backend/` — FastAPI API server (chat, upload, admin, reindex, students DB)
 - `frontend/` — React/Vite UI (Chat / Upload / Admin)
-- `app/` — optional Streamlit demo (starts an embedded FastAPI server in a thread)
 - `agents/` — multi-agent orchestration (retrieval / form / FAQ)
 - `ingestion/` — loader → cleaning → chunking → embedding → vector store (FAISS)
 - `tests/` — pytest suites
@@ -47,11 +46,6 @@ npm install
 npm run dev
 ```
 
-### Run the Streamlit demo (optional)
-```bash
-streamlit run app/main.py
-```
-
 ### Tests
 ```bash
 pytest -q
@@ -63,7 +57,7 @@ pytest -q
 
 - Python 3, 4-space indentation, type hints where practical.
 - Keep modules small and role-focused (`agents/` vs `ingestion/` vs `backend/`).
-- Functions: `snake_case`; classes: `PascalCase`; constants: `ALL_CAPS` (notably in `app/config.py`).
+- Functions: `snake_case`; classes: `PascalCase`; constants: `ALL_CAPS`.
 - Prefer docstrings for non-obvious modules/functions; keep comments brief and purposeful.
 - When changing return shapes for API endpoints or agent results, update the README/API docs accordingly.
 
@@ -87,7 +81,7 @@ pytest -q
 - Commit messages: imperative and scoped (e.g., “Fix pipeline output flag”, “Unify vector index path”).
 - PRs should include:
   - short behavior summary,
-  - affected modules (`agents`, `ingestion`, `backend`, `frontend`, `app`),
+  - affected modules (`agents`, `ingestion`, `backend`, `frontend`),
   - test command + result (`pytest -q`),
   - screenshots/GIFs for UI changes (when applicable).
 

@@ -25,9 +25,6 @@ langchain-community==0.4.1
 # --- LLM generation (local, optional at runtime) ---
 ollama==0.6.1
 
-# --- Streamlit demo (optional) ---
-streamlit==1.51.0
-
 # --- Tests ---
 pytest==9.0.1
 pytest-asyncio==1.3.0

@@ -39,7 +39,7 @@ class WebIngestRequest(BaseModel):
 def create_app() -> FastAPI:
     app = FastAPI(title="ESILV Smart Assistant API")
 
-    # Keep permissive CORS for dev (React/Streamlit). Tighten for prod later.
+    # Keep permissive CORS for dev (React frontend). Tighten for prod later.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -47,7 +47,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Keep same storage layout as current app/main.py
+    # Storage layout under data/
     storage_dir = Path(__file__).parent.parent.joinpath("data")
     raw_dir = storage_dir.joinpath("raw")
     processed_dir = storage_dir.joinpath("processed")

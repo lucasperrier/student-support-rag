@@ -47,7 +47,6 @@ See it end-to-end in the **[demo walkthrough](docs/demo.md)** (real inputs and o
 | Agents       | `agents/`      | rule-first router + RAG, optional LLM classifier  |
 | Backend      | `backend/`     | FastAPI, SQLModel (SQLite)                         |
 | Frontend     | `frontend/`    | React 19, Vite, TypeScript                         |
-| Demo app     | `app/`         | Streamlit (optional)                              |
 | LLM          | —              | Ollama (`llama2` by default), local & optional    |
 
 **Retrieval is decoupled from generation:** if Ollama isn't running you still get the
@@ -103,7 +102,6 @@ uvicorn backend.main:app --reload --port 8001
 cd frontend && npm install && npm run dev
 ```
 
-Optional Streamlit demo: `streamlit run app/main.py`.
 Optional generation: install [Ollama](https://ollama.com), run `ollama serve`, `ollama pull llama2`.
 
 ---
@@ -177,7 +175,6 @@ esilv_smart_assistant/
 ├── ingestion/        # loader → cleaning → chunking → embedding → FAISS vector store
 ├── backend/          # FastAPI server
 ├── frontend/         # React + Vite + TypeScript UI
-├── app/              # optional Streamlit demo
 ├── eval/             # retrieval evaluation (questions.json + retrieval_eval.py)
 ├── tests/            # pytest suites (72 tests)
 ├── data/
